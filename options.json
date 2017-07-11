@@ -1,37 +1,31 @@
 
-[
-	center: "mosquito island",
-	maptype: "terrain",
-	scale: 2,
-	size: "320x240",
-	style: [
+{
+	"center": "new york",
+	"maptype": "road",
+	"scale": 2,
+	"size": "320x320",
+	"styles": [
 		{
-			feature: 'road',
-			elementType: 'geometry',
-			stylers: [
-				{ hue: '#000000' },
-				{ saturation: -100 },
-				{ lightness: -100 },
-				{ visibility: 'on' }
-			]
+			"feature": "road",
+			"elementType": "geometry",
+			"hue": "0x000000",
+			"saturation": -100,
+			"lightness": -100,
+			"visibility": "on"
 		},{
-			feature: 'landscape',
-			element: 'geometry',
-			stylers: [
-				{ hue: '#777777' },
-				{ saturation: -100 },
-				{ lightness: -48 },
-				{ visibility: 'simplified' }
-			]
+			"feature": "landscape",
+			"element": "geometry",
+			"color": "0x777777",
+			"visibility": "simplified"
 		},{
-			feature: 'transit',
-			element: 'labels',
-			stylers: [
-				{ hue: '#ffffff' },
-				{ saturation: 0 },
-				{ lightness: 100 },
-				{ visibility: 'off' }
-			]
+			"feature": "transit",
+			"element": "labels",
+			"hue": "0xffffff",
+			"saturation": 0,
+			"lightness": 100,
+			"visibility": "off"
 		}
 	]
-]
+}
+
+
