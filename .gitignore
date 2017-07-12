@@ -3,5 +3,6 @@
 __pycache__
 out.png
 mapscache
-
+raw
+heightmaps
 

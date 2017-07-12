@@ -1,28 +1,23 @@
 
 {
-	"center": "new york",
+	"center": "virgin islands",
 	"maptype": "road",
 	"scale": 2,
 	"size": "320x320",
 	"styles": [
 		{
 			"feature": "road",
-			"elementType": "geometry",
-			"hue": "0x000000",
-			"saturation": -100,
-			"lightness": -100,
+			"element": "geometry",
+			"color": "0x000000",
 			"visibility": "on"
 		},{
 			"feature": "landscape",
-			"element": "geometry",
-			"color": "0x777777",
-			"visibility": "simplified"
+			"element": "geometry", 
+			"visibility": "on"
 		},{
 			"feature": "transit",
 			"element": "labels",
 			"hue": "0xffffff",
-			"saturation": 0,
-			"lightness": 100,
 			"visibility": "off"
 		}
 	]

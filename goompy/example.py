@@ -1,33 +1,41 @@
+#!/usr/bin/env python
+'''
+Example of using GooMPy with Tkinter
+
+Copyright (C) 2015 Alec Singer and Simon D. Levy
+
+This code is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 of the 
+License, or (at your option) any later version.
+This code is distributed in the hope that it will be useful,     
+but WITHOUT ANY WARRANTY without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU Lesser General Public License 
+along with this code.  If not, see <http://www.gnu.org/licenses/>.
+'''
 
 from Tkinter import Tk, Canvas, Label, Frame, IntVar, Radiobutton, Button
 from PIL import ImageTk
 
 from goompy import GooMPy
 
-#my stuff
 from helpers import *
-from keys import gmapsApiKey
-import googlemaps
-
-gmaps = googlemaps.Client(key=gmapsApiKey)
-options = importJson('options.json')
-
-#move the styles into a seperate list
-styles = options.pop('styles')
-
-# Geocoding an address
-geocode_result = gmaps.geocode(options.pop('center'))
-
-LATITUDE = geocode_result[0]['geometry']['location']['lat']
-LONGITUDE = geocode_result[0]['geometry']['location']['lng']
 
 WIDTH = 800
 HEIGHT = 500
 
-#LATITUDE  =  37.7913838
-#LONGITUDE = -79.44398934
+LATITUDE  =  37.7913838
+LONGITUDE = -79.44398934
 ZOOM = 15
 MAPTYPE = 'roadmap'
+
+options = importJson('options.json')
+
+#move the styles into a seperate list
+styles = options.pop('styles')
+styleString = stylesToUrl(styles)
 
 class UI(Tk):
 
@@ -64,7 +72,7 @@ class UI(Tk):
         maptype_index = 0
         self.radiovar.set(maptype_index)
 
-        self.goompy = GooMPy(WIDTH, HEIGHT, LATITUDE, LONGITUDE, ZOOM, MAPTYPE)
+        self.goompy = GooMPy(WIDTH, HEIGHT, LATITUDE, LONGITUDE, ZOOM, MAPTYPE, styleString)
 
         self.restart()
 

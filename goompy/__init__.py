@@ -1,26 +1,22 @@
-'''
-GooMPy: Google Maps for Python
-
-Copyright (C) 2015 Alec Singer and Simon D. Levy
-
-This code is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 of the 
-License, or (at your option) any later version.
-This code is distributed in the hope that it will be useful,     
-but WITHOUT ANY WARRANTY without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-You should have received a copy of the GNU Lesser General Public License 
-along with this code.  If not, see <http://www.gnu.org/licenses/>.
-'''
-
 import math
 import PIL.Image
 import cStringIO
 import urllib
 import os
 import time
+from hashlib import md5
+
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.debug('This is a log message.')
+
+#my stuff
+#TODO put in a function to allow edit in window
+from helpers import *
+OPTIONS = importJson('options.json')
+STYLES = OPTIONS.pop('styles')
+_STYLE_STRING = stylesToString(STYLES)
+logging.debug('style string: '+_STYLE_STRING)
 
 try:
     from key import _KEY
@@ -33,6 +29,15 @@ _TILESIZE = 640        # Larget tile we can grab without paying
 _GRABRATE = 4          # Fastest rate at which we can download tiles without paying
 
 _pixrad = _EARTHPIX / math.pi
+
+
+def _set_style(styles):
+    #TODO
+    return None
+
+def _get_style(styles):
+    #TODO
+    return None
  
 def _new_image(width, height):
 
@@ -45,14 +50,20 @@ def _roundto(value, digits):
 def _pixels_to_degrees(pixels, zoom):
     return pixels * 2 ** (21 - zoom)
 
-def _grab_tile(lat, lon, zoom, maptype, _TILESIZE, sleeptime, style):
+def _grab_tile(lat, lon, zoom, maptype, _TILESIZE, sleeptime):
 
-    urlbase = 'https://maps.googleapis.com/maps/api/staticmap?center=%f,%f&zoom=%d&maptype=%s&size=%dx%d&%s'
+
+    urlbase = 'https://maps.googleapis.com/maps/api/staticmap?center=%f,%f&zoom=%d&maptype=%s&size=%dx%d'
+    urlbase +="&"+_STYLE_STRING
     urlbase += _KEY
 
-    specs = lat, lon, zoom, maptype, _TILESIZE, _TILESIZE, style
+    logging.debug('in grabtile: '+_STYLE_STRING)
 
-    filename = 'mapscache/' + ('%f_%f_%d_%s_%d_%d' % specs) + '.png'
+    specs = lat, lon, zoom, maptype, _TILESIZE, _TILESIZE
+
+    name = md5(('%f_%f_%d_%s_%d_%d' % specs) + _STYLE_STRING).hexdigest()
+
+    filename = 'mapscache/' + name + '.png'
 
     tile = None
 
@@ -123,7 +134,7 @@ def fetchTiles(latitude, longitude, zoom, maptype, radius_meters=None, default_n
 
 class GooMPy(object):
 
-    def __init__(self, width, height, latitude, longitude, zoom, maptype, radius_meters=None, default_ntiles=4):
+    def __init__(self, width, height, latitude, longitude, zoom, maptype, style=[], radius_meters=None, default_ntiles=4):
         '''
         Creates a GooMPy object for specified display widthan and height at the specified coordinates,
         zoom level (0-22), and map type ('roadmap', 'terrain', 'satellite', or 'hybrid').
@@ -140,6 +151,8 @@ class GooMPy(object):
         self.zoom = zoom
         self.maptype = maptype
         self.radius_meters = radius_meters
+
+        self.style = style
 
         self.winimage = _new_image(self.width, self.height)
 
@@ -202,4 +215,3 @@ class GooMPy(object):
 
         newval = oldval + diff
         return newval if newval > 0 and newval < self.bigimage.size[0]-dimsize else oldval
-
