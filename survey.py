@@ -35,17 +35,17 @@ elevationUrl = 'https://maps.googleapis.com/maps/api/elevation/json'
 styles = options.pop('styles')
 
 # Geocoding an address
-geocode_result = gmaps.geocode('virgin islands')
+geocode_result = gmaps.geocode('mosquito island')
 
 lat = geocode_result[0]['geometry']['location']['lat']
 lng = geocode_result[0]['geometry']['location']['lng']
 
 #bounds   = geocode_result[0]['geometry']['bounds']
 viewport = geocode_result[0]['geometry']['viewport']
-viewport['northeast']['lat'] = 18.532035
-viewport['northeast']['lng'] = -64.324514
-viewport['southwest']['lat'] = 18.271421
-viewport['southwest']['lng'] = -65.105230
+#viewport['northeast']['lat'] = 18.532035
+#viewport['northeast']['lng'] = -64.324514
+#viewport['southwest']['lat'] = 18.271421
+#viewport['southwest']['lng'] = -65.105230
 
 
 latDiff = ((viewport['northeast']['lat'] - viewport['southwest']['lat'])/ELEVATION_RESOLUTION)

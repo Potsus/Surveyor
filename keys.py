@@ -1,3 +1,3 @@
 gmapsApiKey1 = 'AIzaSyCQMtoOPkxOmiIhzanjOfSj8Aco6uXHd9w'
-gmapsApiKey = 'AIzaSyBqOgwMgdnUlxZt8YcbhJlhPyUDROZE7h4'
-gmapsApiKey3 = 'AIzaSyCQMtoOPkxOmiIhzanjOfSj8Aco6uXHd9w'
+gmapsApiKey  = 'AIzaSyDrOhGpXNwe5n4-xeTrcWsEYrDA5xE0JH0'
+
