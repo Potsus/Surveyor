@@ -24,7 +24,7 @@ from keys import gmapsApiKeys
 
 from calculate import TICK as softTick
 from calculate import NORTH, SOUTH, EAST, WEST
-TICK = softTick 
+TICK = softTick * 16
 
 gmaps = googlemaps.Client(key=gmapsApiKeys[0])
 keyNum = 0
@@ -39,7 +39,7 @@ ELEVATION_URL = 'https://maps.googleapis.com/maps/api/elevation/json'
 styles = options.pop('styles')
 
 # Geocoding an address
-LOCATION = 'Mosquito Island'
+LOCATION = 'mosquito island'
 geocode_result = gmaps.geocode(LOCATION)
 
 lat = geocode_result[0]['geometry']['location']['lat']
@@ -54,7 +54,7 @@ SOUTH = viewport['southwest']['lat']
 WEST  = viewport['southwest']['lng'] 
 
 #ELEVATION_RESOLUTION = (MAP_RESOLUTION * SCALE)/4
-MAX_REQUESTS = 512
+MAX_REQUESTS = 512/16
 ELEVATION_RESOLUTION = abs(NORTH - SOUTH) / TICK
 
 ELEVATION_RESOLUTION = roundToEven(ELEVATION_RESOLUTION)
@@ -68,7 +68,6 @@ def ticksToResolution(a,b):
 
 yResolution = ticksToResolution(NORTH, SOUTH)
 xResolution = ticksToResolution(EAST, WEST)
-
 
 
 print('fetching grid sized %s x %s is this ok?' % (xResolution, yResolution))
@@ -111,7 +110,7 @@ def requestLineFragment(lineLat, samples, start):
 
     lineLng = EAST - (TICK * start)
 
-    queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (ELEVATION_URL, lineLat, lineLng, lineLat, lineLng - (TICK * (samples -1)), samples, gmapsApiKeys[keyNum])
+    queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (ELEVATION_URL, lineLat, lineLng, lineLat, lineLng - (TICK * samples), samples, gmapsApiKeys[keyNum])
     response     = requests.get(queryString)
     responseData = json.loads(response.content)
     if responseData['status'] != 'OK':
@@ -135,16 +134,14 @@ def getRow(lat):
         if(x + samplesToRequest > xResolution):
             samplesToRequest = xResolution - x
         row.extend(requestLineFragment(lat, samplesToRequest, x))
-        x += samplesToRequest
+        x = x + samplesToRequest
     return row
 
 
 #START THE THING
 
-useCache = 0
-
 #if i already have data load it
-if os.path.isfile('raw/' + filename + '.json') & useCache == 1:
+if os.path.isfile('raw/' + filename + '.json'):
     elevationGrid = importJson('raw/' + filename + '.json')
 else:
     #
@@ -203,11 +200,9 @@ def generateBoundedImage(data, lower, upper):
     print('generating image with bounds %s' % suffix)
     generateImage(data, suffix)
 
-def generateCuts(data, min, numLayers):
-    layerHeight = (data.max() - min) / numLayers
-
-    for i in range(1, numLayers+1):
-        upper = (data.max() - (layerHeight * (i-1)))
+def generateCuts(data, min, layerHeight):
+    for i in range(1, int(math.ceil(((data.max() - min) / layerHeight)))):
+        upper = (data.max() - (layerHeight * i-1))
         lower = (data.max() - (layerHeight * i))
         
         generateBoundedImage(data, lower, upper)
@@ -248,3 +243,4 @@ queryString = staticMapUrl+'?'+objectToString(options, '=', '&')+'&'+stylesToStr
 
 #out.save('out.png')
 
+class Surveyor 
