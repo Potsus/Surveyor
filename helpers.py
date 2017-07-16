@@ -38,6 +38,17 @@ def cleanGrid(grid):
     cleanedGrid = map(cleanRow, grid)
     return cleanedGrid
 
+def findRawRez(grid):
+    rezGrid = map(rezRow, grid)
+    return rezGrid
+
+def getRez(location):
+    return location['resolution']
+
+def rezRow(row):
+    rezRow = map(getRez, row)
+    return rezRow
+
 def feetToInches(feet):
     return feet * 12
 

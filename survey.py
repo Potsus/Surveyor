@@ -24,7 +24,7 @@ from keys import gmapsApiKeys
 
 from calculate import TICK as softTick
 from calculate import NORTH, SOUTH, EAST, WEST
-TICK = softTick 
+TICK = softTick * 1024
 
 gmaps = googlemaps.Client(key=gmapsApiKeys[0])
 keyNum = 0
@@ -39,7 +39,7 @@ ELEVATION_URL = 'https://maps.googleapis.com/maps/api/elevation/json'
 styles = options.pop('styles')
 
 # Geocoding an address
-LOCATION = 'Mosquito Island'
+LOCATION = 'carribbean'
 geocode_result = gmaps.geocode(LOCATION)
 
 lat = geocode_result[0]['geometry']['location']['lat']
@@ -141,10 +141,11 @@ def getRow(lat):
 
 #START THE THING
 
-useCache = 0
+useCache = 1
 
 #if i already have data load it
 if os.path.isfile('raw/' + filename + '.json') & useCache == 1:
+    logging.debug('loading data from file...')
     elevationGrid = importJson('raw/' + filename + '.json')
 else:
     #
@@ -178,6 +179,7 @@ else:
     #writeJsonToFile(elevationGrid, 'raw/' + filename + '.json')
 
 
+logging.debug('cleaning data...')
 cleanedData = np.array(cleanGrid(elevationGrid))
 #np.save('%s cleaned' % filename, cleanedData)
 
