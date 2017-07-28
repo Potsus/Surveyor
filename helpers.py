@@ -1,11 +1,26 @@
 import json
 import math
 import numpy as np 
+import yaml
 
-def importJson(file):
+def importOrderedJson(filename):
     from collections import OrderedDict
-    with open(file) as json_data:
+    with open(filename) as json_data:
         return json.load(json_data, object_pairs_hook=OrderedDict)
+
+#loads a json file with specified handle
+def importJson(filename):
+    with open(filename + '.json') as json_data:
+        return json.load(json_data)
+
+#loads a yaml file with specified handle
+def importYaml(filename):
+    with open(filename + '.yaml') as yaml_data:
+        return yaml.safe_load(yaml_data)
+
+def saveYaml(yaml_data, filename):
+    with file(filename + '.yaml', 'w+') as yaml_file:
+        yaml.safe_dump(yaml_data, yaml_file, default_flow_style=False)
 
 def stylesToString(styles):
     stringifiedStyles = list(map(styleString, styles))
@@ -23,7 +38,7 @@ def objectToString(object, pairSeperator, objectSeperator):
     return str(objectSeperator).join(['%s%s%s' % (key,pairSeperator, value) for (key, value) in object.items()])
 
 def writeJsonToFile(variable, filename):
-    with open(str(filename), 'w') as outfile:
+    with open(str(filename + '.json'), 'w') as outfile:
         json.dump(variable, outfile, ensure_ascii=False)
 
 
@@ -77,3 +92,11 @@ def listColDelete(list, col):
 def listCol(list, col):
     for row in list:
         print row[col]
+
+
+def keyExists(obj, index):
+    try:
+        obj[index]
+    except (IndexError, KeyError):
+        return False
+    return True

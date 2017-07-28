@@ -1,27 +1,26 @@
 ---
-locations:
-  - thousandIslands:
-    name: The Thousand Islands
-    bounds:
-      NORTH : 44.485782
-      EAST  : -75.740578
-      SOUTH : 44.183296
-      WEST  : -76.204782
+ti:
+  name: The Thousand Islands
+  bounds:
+    north : 44.485782
+    east  : -75.740578
+    south : 44.183296
+    west  : -76.204782
 
-  - virginIslands:
-    name: The Virgin Islands
-    bounds:
-      NORTH : 18.538608
-      EAST  : -64.316278
-      SOUTH : 18.289912
-      WEST  : -65.107491
+vi:
+  name: The Virgin Islands
+  bounds:
+    north : 18.538608
+    east  : -64.316278
+    south : 18.289912
+    west  : -65.107491
 
-  - philadelphia:
-    name: Philadelphia
-    bounds:
-      NORTH : 40.138658
-      EAST  : -74.925779
-      SOUTH : 39.841952
-      WEST  : -75.304807
+phil:
+  name: Philadelphia
+  bounds:
+    north : 40.138658
+    east  : -74.925779
+    south : 39.841952
+    west  : -75.304807
 
 ...
