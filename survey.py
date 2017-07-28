@@ -24,7 +24,7 @@ from keys import gmapsApiKeys
 
 from calculate import TICK as softTick
 from calculate import NORTH, SOUTH, EAST, WEST
-TICK = softTick * 1024
+TICK = softTick * 32
 
 gmaps = googlemaps.Client(key=gmapsApiKeys[0])
 keyNum = 0
@@ -39,7 +39,7 @@ ELEVATION_URL = 'https://maps.googleapis.com/maps/api/elevation/json'
 styles = options.pop('styles')
 
 # Geocoding an address
-LOCATION = 'carribbean'
+LOCATION = 'british virgin islands'
 geocode_result = gmaps.geocode(LOCATION)
 
 lat = geocode_result[0]['geometry']['location']['lat']
@@ -48,10 +48,19 @@ lng = geocode_result[0]['geometry']['location']['lng']
 #bounds   = geocode_result[0]['geometry']['bounds']
 viewport = geocode_result[0]['geometry']['viewport']
 
-NORTH = viewport['northeast']['lat'] 
-EAST  = viewport['northeast']['lng']  
-SOUTH = viewport['southwest']['lat'] 
-WEST  = viewport['southwest']['lng'] 
+#NORTH = viewport['northeast']['lat'] 
+#EAST  = viewport['northeast']['lng']  
+#SOUTH = viewport['southwest']['lat'] 
+#WEST  = viewport['southwest']['lng'] 
+
+#thousand islands
+#NORTH = 44.485782
+#EAST  = -75.740578
+#SOUTH = 44.183296
+#WEST  = -76.204782
+#geocode_result[0]['address_components'][0]['short_name'] = 'alex bay'
+
+#filename = '%s at %sx%s' % (geocode_result[0]['address_components'][0]['short_name'], xResolution, yResolution)
 
 #ELEVATION_RESOLUTION = (MAP_RESOLUTION * SCALE)/4
 MAX_REQUESTS = 512
@@ -183,27 +192,27 @@ logging.debug('cleaning data...')
 cleanedData = np.array(cleanGrid(elevationGrid))
 #np.save('%s cleaned' % filename, cleanedData)
 
-def clipLowerBound(lowerBound):
-    cleanedData = np.clip(cleanedData, lowerBound, cleanedData.max())
+def clipLowerBound(dataArray, lowerBound):
+    return np.clip(dataArray, lowerBound, dataArray.max())
 
 #clipLowerBound(cleanedData, -25)
 
 #writeJsonToFile(cleanedData, filename + ' cleaned.json')
 
-def generateImage(data, suffix=''):
+def saveAsImage(data, handle):
     imageData = (255*(data - np.max(data))/-np.ptp(data)).astype(int)
 
     #generate heightmap
     heightMap = Image.fromarray(imageData.astype('uint8'))
     heightMap = PIL.ImageOps.invert(heightMap)
     heightMap = heightMap.transpose(Image.FLIP_LEFT_RIGHT)
-    heightMap.save('heightmaps/' + filename + suffix + '.png')
+    heightMap.save(handle + '.png')
 
-def generateBoundedImage(data, lower, upper):
+def makeSlice(data, lower, upper):
     data = np.clip(data, lower, upper)
     suffix = (' %s-%s' % (upper, lower))
     print('generating image with bounds %s' % suffix)
-    generateImage(data, suffix)
+    saveAsImage(data, 'slices/' + filename + suffix)
 
 def generateCuts(data, min, numLayers):
     layerHeight = (data.max() - min) / numLayers
@@ -212,12 +221,12 @@ def generateCuts(data, min, numLayers):
         upper = (data.max() - (layerHeight * (i-1)))
         lower = (data.max() - (layerHeight * i))
         
-        generateBoundedImage(data, lower, upper)
+        makeSlice(data, lower, upper)
 
 
 
 
-generateImage(np.clip(cleanedData, -20, cleanedData.max()))
+saveAsImage(clipLowerBound(cleanedData, 'heightmaps/' + filename)
 
 #generateCuts(cleanedData, -25, 50)
 
