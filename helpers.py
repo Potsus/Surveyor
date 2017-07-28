@@ -42,27 +42,7 @@ def writeJsonToFile(variable, filename):
         json.dump(variable, outfile, ensure_ascii=False)
 
 
-def getElevation(location):
-    return location['elevation']
 
-def cleanRow(row):
-    cleanedRow = map(getElevation, row)
-    return cleanedRow
-
-def cleanGrid(grid):
-    cleanedGrid = map(cleanRow, grid)
-    return cleanedGrid
-
-def findRawRez(grid):
-    rezGrid = map(rezRow, grid)
-    return rezGrid
-
-def getRez(location):
-    return location['resolution']
-
-def rezRow(row):
-    rezRow = map(getRez, row)
-    return rezRow
 
 def feetToInches(feet):
     return feet * 12
@@ -108,3 +88,12 @@ def canCastToInt(val):
         return True
     except ValueError:
         return False
+
+def nameLookup(name, locations):
+        for location in locations.iteritems():
+            if location[1]['name'] == name:
+                return location
+        return False
+
+def what(a):
+    print("a: " + a)

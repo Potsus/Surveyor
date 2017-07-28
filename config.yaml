@@ -15,5 +15,7 @@ size: "320x320"
 
 max_samples_per_request: 512
 
+useCache: 1
+
 
 ...

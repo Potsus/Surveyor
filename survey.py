@@ -12,8 +12,7 @@ import yaml
 
 from helpers import *
 from surveyor import *
-from calculate import TICK as softTick
-config = importYaml('config.yaml')
+config = importYaml('config')
 
 #goompy stuff
 #from Tkinter import Tk, Canvas, Label, Frame, IntVar, Radiobutton, Button
@@ -23,8 +22,7 @@ config = importYaml('config.yaml')
 #create google maps interface
 gmaps = googlemaps.Client(key=config['keys'][0])
 
-#keep track of which api key we're on
-keyNum = 0
+
 
 #styles = importYaml('styles')
 
@@ -32,7 +30,9 @@ locations = importYaml('locations')
 
 
 #present location options
-locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
+#locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
+locChoice = 'vi'
+
 
 #load selection data
 if keyExists(locations, locChoice):
@@ -65,54 +65,29 @@ else:
 # 2 = 300 dpi, 4 = 150 dpi, 8 = 75 dpi and so forth
 # we can probably get away with approximating from a lesser quality 
 #parts of the map have different resolutions and may require fewer samples to get all relevant data
-quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
-if canCastToInt(quality) == False:
-    print("couldn't get a number there, defaulting to 64")
-    quality = 64
-TICK = softTick * int(quality)
 
-xResolution = ticksToResolution(location['bounds']['east'], location['bounds']['west'])
-yResolution = ticksToResolution(location['bounds']['north'], location['bounds']['south'])
-
-filename = '%s at %sx%s' % (location['name'], xResolution, yResolution)
+#quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
+#if canCastToInt(quality) == False:
+#    print("couldn't get a number there, defaulting to 64")
+#    quality = 64
+quality = 64
 
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 print('starting surveyor')
-print('target is: ' + filename)
+print('target is: ' + location['name'])
 
-elevationGrid = []
+mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
+mapper.setQuality(quality)
+mapper.scan()
 
-junkSample = json.loads('{"elevation": 0, "location": {"lat": 0, "lng": 0}, "resolution": 0}')
+cleanedData = np.array(cleanGrid(mapper.getData()))
 
+showImage(clipLowerBound(cleanedData, -20))
 
-useCache = 1
-
-#if i already have data load it
-if os.path.isfile('raw/' + filename + '.json') & useCache == 1:
-    print('loading data from file...')
-    elevationGrid = importOrderedJson('raw/' + filename)
-else:
-    choice = raw_input('fetching grid sized %s x %s is this ok? (y/n) ' % (xResolution, yResolution))
-    if choice != 'y':
-        #quit if we don't want to continue
-        exit()
-
-    #get data from google
-    for y in range (0, yResolution):
-
-        sampleLat    = location['bounds']['north'] - (TICK * y)
-        
-        elevationGrid.append(getRow(sampleLat))
-        print('completed gridline %s of %s' % (y, yResolution))
-
-
-    writeJsonToFile(elevationGrid, 'raw/' + filename + '.json')
-
-
-print('cleaning data...')
-cleanedData = np.array(cleanGrid(elevationGrid))
+#print('cleaning data...')
+#cleanedData = np.array(cleanGrid(elevationGrid))
 #np.save('%s cleaned' % filename, cleanedData)
 
 
@@ -121,7 +96,7 @@ cleanedData = np.array(cleanGrid(elevationGrid))
 #writeJsonToFile(cleanedData, filename + ' cleaned.json')
 
 
-saveAsImage(clipLowerBound(cleanedData, 'heightmaps/' + filename, -20))
+#saveAsImage(clipLowerBound(cleanedData, 'heightmaps/' + filename, -20))
 
 #generateCuts(cleanedData, -25, 50)
 
