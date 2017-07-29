@@ -31,7 +31,7 @@ locations = importYaml('locations')
 
 #present location options
 #locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
-locChoice = 'vi'
+locChoice = 'Japan'
 
 
 #load selection data
@@ -45,8 +45,9 @@ else:
     if nameLookup(geocode_result[0]['address_components'][0]['long_name'], locations) == False:
         print('not listed under a different name, adding to locations list...')
         #create a location
+        location = {}
         location['name'] = geocode_result[0]['address_components'][0]['long_name']
-
+        location['bounds'] = {}
         location['bounds']['north'] = geocode_result[0]['geometry']['bounds']['northeast']['lat']
         location['bounds']['south'] = geocode_result[0]['geometry']['bounds']['southwest']['lat']
         location['bounds']['east']  = geocode_result[0]['geometry']['bounds']['northeast']['lng']
@@ -70,7 +71,8 @@ else:
 #if canCastToInt(quality) == False:
 #    print("couldn't get a number there, defaulting to 64")
 #    quality = 64
-quality = 64
+#else: quality = int(quality)
+quality = 1024
 
 
 #import logging
@@ -81,10 +83,13 @@ print('target is: ' + location['name'])
 mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
 mapper.setQuality(quality)
 mapper.scan()
+mapper.extractHeights()
+mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 50)
 
-cleanedData = np.array(cleanGrid(mapper.getData()))
+#cleanedData = np.array(cleanGrid(mapper.getRawData()))
+#generateCuts(cleanedData, -25, 50)
 
-showImage(clipLowerBound(cleanedData, -20))
+#showImage(clipLowerBound(cleanedData, -20))
 
 #print('cleaning data...')
 #cleanedData = np.array(cleanGrid(elevationGrid))

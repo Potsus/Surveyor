@@ -33,6 +33,7 @@ class surveyor:
         self.elevationGrid = []
 
         self.quality = 64
+        self.tick = baseTick
         self.updateProps()
 
 
@@ -48,18 +49,56 @@ class surveyor:
                 exit()
 
             #get data from google
-            for y in range (0, yResolution):
+            for y in range (0, self.yResolution):
 
-                sampleLat = north - (TICK * y)
-                
-                self.elevationGrid.append(getRow(sampleLat))
-                print('completed gridline %s of %s' % (y, yResolution))
+                sampleLat = self.north - (self.tick * y)
+                print 'fetching gridline %s of %s' % (str(y), self.yResolution),
+                row = self.getRow(sampleLat)
+                self.elevationGrid.append(row)
+                self.cleanGrid.append(cleanRow(row))
+                print(' complete')
 
             self.saveCollectedData()
 
 
-    def getData(self):
+    def getRow(self, lat):
+        x   = 0
+        row = []
+        while(x < self.xResolution):
+            #make sure you don't go past elevation resolution
+            samplesToRequest = config['max_samples_per_request']
+            if(x + samplesToRequest > self.xResolution):
+                samplesToRequest = self.xResolution - x
+
+            row.extend(self.requestLineFragment(lat, samplesToRequest, x))
+            print x,
+            x += samplesToRequest
+        return row
+
+    def requestLineFragment(self, lineLat, samples, start):
+        #if we've run out of keys return junk data
+        if (self.keyNum >= len(config['keys'])):
+            return makeJunkData(samples)
+
+        lineLng = self.east - (self.tick * start)
+
+        queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (config['urls']['elevation'], lineLat, lineLng, lineLat, lineLng - (self.tick * (samples -1)), samples, config['keys'][self.keyNum])
+        response     = requests.get(queryString)
+        responseData = json.loads(response.content)
+        if responseData['status'] != 'OK':
+            print('response error: %s' % responseData['status'])
+            self.useNextKey()
+            return self.requestLineFragment(lineLat, samples, start)
+
+        return responseData['results']
+
+    def getRawData(self):
+        if self.elevationGrid == []:
+            self.scan()
         return self.elevationGrid
+
+    def getData(self):
+        return self.cleanGrid
 
     def saveCollectedData(self):
         if self.elevationGrid != []:
@@ -81,7 +120,7 @@ class surveyor:
 
     def clearData(self):
         self.elevationGrid = []
-        self.cleanedData = None
+        self.cleanGrid = []
         gc.collect()
 
 
@@ -104,6 +143,22 @@ class surveyor:
     def useNextKey(self):
         self.keyNum += 1
 
+    def extractHeights(self):
+        self.cleanedGrid = np.array(cleanGrid(self.elevationGrid))
+
+    def cleanSlice(self, data, lower, upper, prefix):
+        data = np.clip(data, lower, upper)
+        suffix = ('%s-%s' % (lower, upper))
+        print('generating image with bounds %s' % suffix)
+        saveAsImage(data, 'slices/%s/%s %s %s' % (self.name, prefix, self.filename, suffix))
+
+    def generateCleanCuts(self, min, layerHeight):
+        numlayers = int((self.cleanedGrid.max() - self.cleanedGrid.min())/layerHeight)
+        for i in range(0, numLayers):
+            upper = (min + (layerHeight * (i+1)))
+            lower = (min + (layerHeight * i))
+            self.cleanSlice(self.cleanedGrid, lower, upper, str(i).zfill(4))
+            i = i+1
 
 
 
@@ -119,45 +174,15 @@ def getFragmentSamples(desiredSamples):
         return getFragmentSamples(desiredSamples/2)
     return int(math.floor(desiredSamples))
 
-def requestLineFragment(lineLat, samples, start):
-    #if we've run out of keys return junk data
-    if (keyNum >= len(config['keys'])):
-        return makeJunkData(samples)
-
-    lineLng = location['bounds']['east'] - (TICK * start)
-
-    queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (config['urls']['elevation'], lineLat, lineLng, lineLat, lineLng - (TICK * (samples -1)), samples, config['keys'][keyNum])
-    response     = requests.get(queryString)
-    responseData = json.loads(response.content)
-    if responseData['status'] != 'OK':
-        logging.debug('response error: %s' % responseData['status'])
-        useNextKey()
-        return requestLineFragment(lineLat, samples, start)
-
-    return responseData['results']
-
 
 
 def getLat(point):
     return point['location']['lng']
 
-def getRow(lat):
-    x   = 0
-    row = []
-    while(x < xResolution):
-        #make sure you don't go past elevation resolution
-        if(x + samplesToRequest > xResolution):
-            samplesToRequest = xResolution - x
-        else:
-            samplesToRequest = config['max_samples_per_request']
 
-        row.extend(requestLineFragment(lat, samplesToRequest, x))
-        print x,
-        x += samplesToRequest
-    return row
 
-def clipLowerBound(dataArray, lowerBound):
-    return np.clip(dataArray, lowerBound, dataArray.max())
+def clipLowerBound(data, lowerBound):
+    return np.clip(data, lowerBound, data.max())
 
 def compressRange(data):
     return (255*(data - np.max(data))/-np.ptp(data)).astype(int)
@@ -176,9 +201,9 @@ def saveAsImage(data, filename):
 
 def makeSlice(data, lower, upper):
     data = np.clip(data, lower, upper)
-    suffix = (' %s-%s' % (upper, lower))
+    suffix = ('%s-%s' % (lower, upper))
     print('generating image with bounds %s' % suffix)
-    saveAsImage(data, 'slices/' + filename + suffix)
+    saveAsImage(data, 'slices/tester/' + suffix)
 
 def generateCuts(data, min, numLayers):
     layerHeight = (data.max() - min) / numLayers
@@ -188,6 +213,22 @@ def generateCuts(data, min, numLayers):
         lower = (data.max() - (layerHeight * i))
         
         makeSlice(data, lower, upper)
+
+def generateCleanCuts(data, min, layerHeight):
+
+    i=0
+    while (i * layerHeight) < data.max():
+        upper = (min + (layerHeight * (i+1)))
+        lower = (min + (layerHeight * i))
+        cleanSlice(data, lower, upper, i)
+        i = i+1
+
+def cleanSlice(data, lower, upper, prefix):
+    data = np.clip(data, lower, upper)
+    suffix = ('%s-%s' % (lower, upper))
+    print('generating image with bounds %s' % suffix)
+    saveAsImage(data, 'slices/tester/' + str(prefix).zfill(4) + '. ' + suffix)
+        
 
 def showImage(data):
     image = convertToImage(data)

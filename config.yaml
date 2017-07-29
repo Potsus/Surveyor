@@ -6,8 +6,8 @@ keys:
   - 'AIzaSyA_8uNN5X5OAFIfJ_Pov_Qerv1-gwTMEDk' 
 
 urls:
-  - staticMap: 'https://maps.googleapis.com/maps/api/staticmap'
-  - elevation: 'https://maps.googleapis.com/maps/api/elevation/json'
+  staticMap: 'https://maps.googleapis.com/maps/api/staticmap'
+  elevation: 'https://maps.googleapis.com/maps/api/elevation/json'
 
 maptype: "road"
 scale: 2

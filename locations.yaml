@@ -1,26 +1,28 @@
----
-ti:
-  name: The Thousand Islands
+Japan:
   bounds:
-    north : 44.485782
-    east  : -75.740578
-    south : 44.183296
-    west  : -76.204782
-
-vi:
-  name: The Virgin Islands
-  bounds:
-    north : 18.538608
-    east  : -64.316278
-    south : 18.289912
-    west  : -65.107491
-
+    east: 154.0031455
+    north: 45.6412626
+    south: 20.3585295
+    west: 122.8554688
+  name: Japan
 phil:
-  name: Philadelphia
   bounds:
-    north : 40.138658
-    east  : -74.925779
-    south : 39.841952
-    west  : -75.304807
-
-...
+    east: -74.925779
+    north: 40.138658
+    south: 39.841952
+    west: -75.304807
+  name: Philadelphia
+ti:
+  bounds:
+    east: -75.740578
+    north: 44.485782
+    south: 44.183296
+    west: -76.204782
+  name: The Thousand Islands
+vi:
+  bounds:
+    east: -64.316278
+    north: 18.538608
+    south: 18.289912
+    west: -65.107491
+  name: The Virgin Islands
