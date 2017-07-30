@@ -2,6 +2,21 @@ from Tkinter import *
 import os.path
 from PIL import Image, ImageTk
 import os
+from helpers import *
+
+locations = importYaml('locations')
+
+
+#present location options
+locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
+#locChoice = 'vi'
+
+
+#load selection data
+if keyExists(locations, locChoice):
+    location = locations[locChoice]
+else: 
+    exit()
 
 #----------------------------------------------------------------------
 
@@ -11,7 +26,7 @@ class MainWindow():
 
     def __init__(self, main):
 
-        path = 'slices/Japan/'
+        path = 'slices/%s/' % location['name']
 
         #get the dimensions of the images we're working with
         self.files = filter( lambda f: not f.startswith('.'), os.listdir(path))
@@ -20,7 +35,7 @@ class MainWindow():
         width, height = sizer.size
 
         # canvas for image
-        self.canvas = Canvas(main, width=width/2, height=height/2)
+        self.canvas = Canvas(main, width=width, height=height)
         self.canvas.grid(row=0, column=0)
 
 
@@ -28,7 +43,7 @@ class MainWindow():
         self.my_images = []
         for filename in self.files:
             image = Image.open(path + filename)
-            image = image.resize((width/2, height/2), Image.ANTIALIAS)
+            #image = image.resize((width/2, height/2), Image.ANTIALIAS)
             image = ImageTk.PhotoImage(image)
             self.my_images.append(image)
 
@@ -39,7 +54,7 @@ class MainWindow():
 
         # button to change image
         self.slider = Scale(master=None, from_=0, to=len(os.listdir(path))-1, command=self.onSlider)
-        self.slider.grid(row=0, column=1)
+        self.slider.grid(row=1, column=0)
 
     #----------------
 

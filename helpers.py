@@ -92,8 +92,10 @@ def canCastToInt(val):
 def nameLookup(name, locations):
         for location in locations.iteritems():
             if location[1]['name'] == name:
-                return location
+                return location[1]
         return False
 
-def what(a):
-    print("a: " + a)
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)

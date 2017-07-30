@@ -152,11 +152,11 @@ class surveyor:
         print('generating image with bounds %s' % suffix)
         saveAsImage(data, 'slices/%s/%s %s %s' % (self.name, prefix, self.filename, suffix))
 
-    def generateCleanCuts(self, min, layerHeight):
-        numlayers = int((self.cleanedGrid.max() - self.cleanedGrid.min())/layerHeight)
+    def generateCleanCuts(self, minimum, layerHeight):
+        numLayers = int((self.cleanedGrid.max() - minimum)/layerHeight)
         for i in range(0, numLayers):
-            upper = (min + (layerHeight * (i+1)))
-            lower = (min + (layerHeight * i))
+            upper = (minimum + (layerHeight * (i+1)))
+            lower = (minimum + (layerHeight * i))
             self.cleanSlice(self.cleanedGrid, lower, upper, str(i).zfill(4))
             i = i+1
 

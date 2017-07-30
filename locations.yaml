@@ -1,3 +1,17 @@
+Australia:
+  bounds:
+    east: 166.7429167
+    north: -0.6911343999999999
+    south: -51.66332320000001
+    west: 100.0911072
+  name: Australia
+Grand Canyon:
+  bounds:
+    east: -111.8002234
+    north: 36.51027029999999
+    south: 35.6745486
+    west: -113.8860446
+  name: Grand Canyon National Park
 Japan:
   bounds:
     east: 154.0031455

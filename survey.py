@@ -30,8 +30,8 @@ locations = importYaml('locations')
 
 
 #present location options
-#locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
-locChoice = 'Japan'
+locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
+#locChoice = 'vi'
 
 
 #load selection data
@@ -48,10 +48,10 @@ else:
         location = {}
         location['name'] = geocode_result[0]['address_components'][0]['long_name']
         location['bounds'] = {}
-        location['bounds']['north'] = geocode_result[0]['geometry']['bounds']['northeast']['lat']
-        location['bounds']['south'] = geocode_result[0]['geometry']['bounds']['southwest']['lat']
-        location['bounds']['east']  = geocode_result[0]['geometry']['bounds']['northeast']['lng']
-        location['bounds']['west']  = geocode_result[0]['geometry']['bounds']['southwest']['lng']
+        location['bounds']['north'] = geocode_result[0]['geometry']['viewport']['northeast']['lat']
+        location['bounds']['south'] = geocode_result[0]['geometry']['viewport']['southwest']['lat']
+        location['bounds']['east']  = geocode_result[0]['geometry']['viewport']['northeast']['lng']
+        location['bounds']['west']  = geocode_result[0]['geometry']['viewport']['southwest']['lng']
 
         locations[locChoice] = location
 
@@ -67,12 +67,12 @@ else:
 # we can probably get away with approximating from a lesser quality 
 #parts of the map have different resolutions and may require fewer samples to get all relevant data
 
-#quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
-#if canCastToInt(quality) == False:
-#    print("couldn't get a number there, defaulting to 64")
-#    quality = 64
-#else: quality = int(quality)
-quality = 1024
+quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
+if canCastToInt(quality) == False:
+    print("couldn't get a number there, defaulting to 64")
+    quality = 64
+else: quality = int(quality)
+#quality = 64
 
 
 #import logging
@@ -84,7 +84,8 @@ mapper = surveyor(location['name'], location['bounds']['north'], location['bound
 mapper.setQuality(quality)
 mapper.scan()
 mapper.extractHeights()
-mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 50)
+saveAsImage(clipLowerBound(mapper.cleanedGrid, mapper.cleanedGrid.min()), 'heightmaps/' + mapper.filename)
+mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 5)
 
 #cleanedData = np.array(cleanGrid(mapper.getRawData()))
 #generateCuts(cleanedData, -25, 50)
