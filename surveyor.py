@@ -150,6 +150,7 @@ class surveyor:
         data = np.clip(data, lower, upper)
         suffix = ('%s-%s' % (lower, upper))
         print('generating image with bounds %s' % suffix)
+        ensure_dir('slices/'+self.name)
         saveAsImage(data, 'slices/%s/%s %s %s' % (self.name, prefix, self.filename, suffix))
 
     def generateCleanCuts(self, minimum, layerHeight):
