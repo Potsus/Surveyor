@@ -10,6 +10,7 @@ import numpy as np
 import os.path
 import yaml
 
+from calculate import TICK as tick
 from helpers import *
 from surveyor import *
 config = importYaml('config')
@@ -67,21 +68,35 @@ else:
 # we can probably get away with approximating from a lesser quality 
 #parts of the map have different resolutions and may require fewer samples to get all relevant data
 
-quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
-if canCastToInt(quality) == False:
-    print("couldn't get a number there, defaulting to 64")
-    quality = 64
-else: quality = int(quality)
-#quality = 64
+def getQuality():
+    quality = raw_input('How fine do you want the sampling? (0: 600 dpi - 8: 75 dpi etc.)')
+    if canCastToInt(quality) == False:
+        print("couldn't get a number there, defaulting to 64")
+        quality = 64
+    else: quality = int(quality)
+    return quality
+
+def setQuality(surv):
+    quality = getQuality()
+    surv.setQuality(quality)
+    print('sample %s at %s by %s?' % (surv.name, surv.xResolution, surv.yResolution))
+    if yn() == False:
+        setQuality(surv)
+
+
+def yn():
+    ans = raw_input("Y/N?")
+    if ans.lower() == 'y':
+        return True
+    return False
 
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 print('starting surveyor')
-print('target is: ' + location['name'])
 
 mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
-mapper.setQuality(quality)
+setQuality(mapper)
 mapper.scan()
 mapper.extractHeights()
 saveAsImage(clipLowerBound(mapper.cleanedGrid, mapper.cleanedGrid.min()), 'heightmaps/' + mapper.filename)

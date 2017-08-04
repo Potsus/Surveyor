@@ -54,7 +54,7 @@ class MainWindow():
 
         # button to change image
         self.slider = Scale(master=None, from_=0, to=len(os.listdir(path))-1, command=self.onSlider)
-        self.slider.grid(row=1, column=0)
+        self.slider.grid(row=0, column=1)
 
     #----------------
 

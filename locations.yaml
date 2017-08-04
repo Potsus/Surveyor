@@ -19,6 +19,20 @@ Japan:
     south: 20.3585295
     west: 122.8554688
   name: Japan
+New Zeland:
+  bounds:
+    east: 179.0296048
+    north: -34.1296177
+    south: -52.6195826
+    west: 165.8700053
+  name: New Zealand
+The United Kingdom:
+  bounds:
+    east: 1.762995
+    north: 60.85484959999999
+    south: 49.8823322
+    west: -8.6494473
+  name: United Kingdom
 phil:
   bounds:
     east: -74.925779

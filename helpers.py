@@ -2,6 +2,7 @@ import json
 import math
 import numpy as np 
 import yaml
+import os
 
 def importOrderedJson(filename):
     from collections import OrderedDict

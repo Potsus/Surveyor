@@ -84,7 +84,13 @@ class surveyor:
 
         queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (config['urls']['elevation'], lineLat, lineLng, lineLat, lineLng - (self.tick * (samples -1)), samples, config['keys'][self.keyNum])
         response     = requests.get(queryString)
-        responseData = json.loads(response.content)
+        
+        try:
+            responseData = json.loads(response.content)
+        except(e):
+            print(e.message + " filling with junk")
+            return makeJunkData(samples)
+
         if responseData['status'] != 'OK':
             print('response error: %s' % responseData['status'])
             self.useNextKey()
