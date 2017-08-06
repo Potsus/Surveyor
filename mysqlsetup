@@ -1,0 +1,14 @@
+mysql.server START
+mysql -u root
+
+CREATE DATABASE surveydb;
+CREATE USER 'surveyuser'@'localhost' IDENTIFIED BY 'surveyuser';
+GRANT ALL ON surveydb.* TO 'surveyuser'@'localhost';
+
+
+brew install postgresql
+
+brew services start postgresql
+gem install pg -- --with-pg-config=/usr/local/bin/pg_config
+gem install bundler
+bundle install
