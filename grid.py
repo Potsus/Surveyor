@@ -11,7 +11,7 @@ class Grid(Base):
     #END TABLE SETUP
 
 
-    class Row(Base):
+class Row(Base):
 
     #SETUP TABLE COLUMNS
     __tablename__ = 'rows'
@@ -23,7 +23,7 @@ class Grid(Base):
 
 
 
-    class Point(Base):
+class Point(Base):
     #SETUP TABLE COLUMNS
     __tablename__ = 'points'
     id        = Column(types.Integer, primary_key=True)
