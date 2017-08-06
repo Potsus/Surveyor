@@ -1,3 +1,7 @@
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String
+
+engine = create_engine('mysql://surveyuser:surveyuser@localhost/surveydb', pool_recycle=3600)
 
 
 

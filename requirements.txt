@@ -6,15 +6,19 @@ chardet==3.0.4
 click==6.7
 click-plugins==1.0.3
 cligj==0.4.0
+cycler==0.10.0
 decorator==4.0.11
 Django==1.10.5
 docopt==0.6.2
 enum34==1.1.6
+functools32==3.2.3.post2
 geopy==1.11.0
 googlemaps==2.5.0
 idna==2.5
 ipython==5.4.1
 ipython-genutils==0.2.0
+matplotlib==2.0.2
+MySQL-python==1.2.5
 numpy==1.13.1
 olefile==0.44
 pathlib2==2.3.0
@@ -26,6 +30,8 @@ prompt-toolkit==1.0.14
 ptyprocess==0.5.2
 Pygments==2.2.0
 pyparsing==2.2.0
+python-dateutil==2.6.1
+pytz==2017.2
 PyYAML==3.12
 rasterio==0.36.0
 requests==2.18.1
@@ -34,6 +40,8 @@ Shapely==1.5.17.post1
 simplegeneric==0.8.1
 six==1.10.0
 snuggs==1.4.1
+SQLAlchemy==1.1.13
+subprocess32==3.2.7
 traitlets==4.3.2
 urllib3==1.21.1
 wcwidth==0.1.7
