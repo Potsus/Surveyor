@@ -12,13 +12,14 @@ gmaps = googlemaps.Client(key=config['keys'][0])
 class Location(Base):
 
     #SETUP TABLE COLUMNS
-    __tablename__ = 'locations'
+    __tablename__ = 'location'
     id    = Column(types.Integer, primary_key=True)
     name  = Column(types.String(256))
     north = Column(types.Float(precision=32))
     south = Column(types.Float(precision=32))
     east  = Column(types.Float(precision=32))
     west  = Column(types.Float(precision=32))
+    grids = relationship("Grid")
     #END TABLE SETUP
 
     #define a location
@@ -32,7 +33,7 @@ class Location(Base):
     def __repr__(self):
         #return self.serialize()
         return '%s: n: %s, s: %s, e: %s, w: %s' % (self.name, self.north, self.south, self.east, self.west)
-        
+
 
     def __str__(self):
         return '%s: n: %s, s: %s, e: %s, w: %s' % (self.name, self.north, self.south, self.east, self.west)

@@ -96,7 +96,22 @@ def nameLookup(name, locations):
                 return location[1]
         return False
 
-def ensure_dir(file_path):
-    directory = os.path.dirname(file_path)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+def ensure_dir(directory):
+    #directory = os.path.dirname(file_path)
+    print('checking if %s exists.' % directory)
+    if not os.path.isdir(directory):
+        print("%s doesn't exist. Creating..." % directory)
+        try:
+            os.makedirs(directory)
+        except:
+            print("error",sys.exc_info()[0],"occured.")
+
+    print("is %s a directory? %s" % (directory, os.path.isdir(directory)))
+
+
+def empty_dir(directory):
+    #get all non dotfiles
+    files = filter( lambda f: not f.startswith('.'), os.listdir(directory))
+    for f in files:
+        os.remove(directory + '/' + f)
+

@@ -3,7 +3,7 @@ from sqlalchemy import Table, Column, types, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
-from geoalchemy import *
+from geoalchemy2 import Geometry
  
 Base = declarative_base()
 

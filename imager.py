@@ -8,15 +8,21 @@ locations = importYaml('locations')
 
 
 #present location options
-locChoice = raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
+def getChoice:
+    return raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
 #locChoice = 'vi'
 
+def setChoice:
+    locChoice = getChoice()
 
-#load selection data
-if keyExists(locations, locChoice):
-    location = locations[locChoice]
-else: 
-    exit()
+    #load selection data
+    if keyExists(locations, locChoice):
+        return locations[locChoice]
+    else: 
+        print('%s is not a valid selection')
+        return setChoice()
+
+location = setChoice()
 
 #----------------------------------------------------------------------
 
@@ -54,7 +60,7 @@ class MainWindow():
 
         # button to change image
         self.slider = Scale(master=None, from_=0, to=len(os.listdir(path))-1, command=self.onSlider)
-        self.slider.grid(row=0, column=1)
+        self.slider.grid(row=1, column=0)
 
     #----------------
 
