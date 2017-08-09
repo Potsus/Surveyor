@@ -14,9 +14,9 @@ from helpers import *
 
 from calculate import TICK as baseTick
 
-junkSample = json.loads('{"elevation": 0, "location": {"lat": 0, "lng": 0}, "resolution": 0}')
-config = importYaml('config')
+from location import Location
 
+config = importYaml('config')
 
 
 class surveyor:
@@ -30,15 +30,33 @@ class surveyor:
         self.south = south
         self.east  = east
         self.west  = west
-        self.elevationGrid = []
+        self.eGrid = []
 
         self.quality = 64
         self.tick = baseTick
+        self.setup()
         self.updateProps()
 
 
+    def setup(self):
+        self.rootdir     = 'Locations/%s/' % self.name
+        self.rawdir      = self.rootdir + 'raw/'
+        self.maptilesdir = self.rootdir + 'maptiles/'
+        self.slicesdir   = self.rootdir + 'slices/'
+        self.vectorsdir  = self.rootdir + 'vectors/'
+
+        ensure_dir(self.rootdir)
+        ensure_dir(self.rawdir)
+        ensure_dir(self.maptilesdir)
+        ensure_dir(self.slicesdir)
+        ensure_dir(self.vectorsdir)
+
+        self.loc = Location(self.name , self.north , self.south , self.east , self.west)
+
+        self.loc.toYaml(self.rootdir + 'config')
+
     def scan(self):
-        if self.elevationGrid != []:
+        if self.eGrid != []:
             return False
         elif self.loadArea():
             return True
@@ -52,11 +70,11 @@ class surveyor:
             for y in range (0, self.yResolution):
 
                 sampleLat = self.north - (self.tick * y)
-                print 'fetching gridline %s of %s' % (str(y), self.yResolution),
+                print 'fetching gridline %s of %s' % (str(y), self.yResolution)
                 row = self.getRow(sampleLat)
-                self.elevationGrid.append(row)
+                self.eGrid.append(row)
                 self.cleanGrid.append(cleanRow(row))
-                print(' complete')
+                #print(' complete')
 
             self.saveCollectedData()
 
@@ -71,10 +89,12 @@ class surveyor:
                 samplesToRequest = self.xResolution - x
 
             row.extend(self.requestLineFragment(lat, samplesToRequest, x))
-            print x,
+            #print x,
             x += samplesToRequest
         return row
 
+
+    
     def requestLineFragment(self, lineLat, samples, start):
         #if we've run out of keys return junk data
         if (self.keyNum >= len(config['keys'])):
@@ -99,16 +119,16 @@ class surveyor:
         return responseData['results']
 
     def getRawData(self):
-        if self.elevationGrid == []:
+        if self.eGrid == []:
             self.scan()
-        return self.elevationGrid
+        return self.eGrid
 
     def getData(self):
         return self.cleanGrid
 
     def saveCollectedData(self):
-        if self.elevationGrid != []:
-            writeJsonToFile(self.elevationGrid, 'raw/' + self.filename)
+        if self.eGrid != []:
+            writeJsonToFile(self.eGrid, self.rawdir + self.filename)
 
     def setQuality(self, quality):
         self.saveCollectedData()
@@ -122,19 +142,29 @@ class surveyor:
         self.xResolution = self.ticksToResolution(self.east, self.west)
         self.yResolution = self.ticksToResolution(self.north, self.south)
 
-        self.filename = '%s at %sx%s' % (self.name, self.xResolution, self.yResolution)
+        self.filename = '%sx%s' % (self.xResolution, self.yResolution)
 
     def clearData(self):
-        self.elevationGrid = []
+        self.eGrid = []
         self.cleanGrid = []
         gc.collect()
 
 
     def loadArea(self):
+        rawfile = self.rawdir + self.filename
         #if i already have data load it
-        if os.path.isfile('raw/' + self.filename + '.json') & config['useCache'] == 1:
-            print('loading data from raw/' + self.filename + '.json')
-            self.elevationGrid = importOrderedJson('raw/' + self.filename)
+        if os.path.isfile(rawfile + '.json') & config['useCache'] == 1:
+            print('loading data from ' + rawfile + '.json')
+            self.eGrid = importOrderedJson(rawfile)
+            return True
+        return False
+
+    def loadFromFile(rawfile):
+        if os.path.isfile(rawfile):
+            print('loading data from ' + rawfile)
+            self.eGrid = importOrderedJson(rawfile)
+            self.xResolution = len(self.eGrid)
+            self.yResolution = len(self.eGrid[0])
             return True
         return False
 
@@ -150,13 +180,26 @@ class surveyor:
         self.keyNum += 1
 
     def extractHeights(self):
-        self.cleanedGrid = np.array(cleanGrid(self.elevationGrid))
+        self.cleanedGrid = np.array(cleanGrid(self.eGrid))
+
+    def saveHeightmap(self, filename):
+        extractHeights()
+        saveAsImage(clipLowerBound(self.cleanedGrid, self.cleanedGrid.min()), self.rootdir + filename)
+
+    def saveRezGrid(self):
+        self.rezGrid()
+        saveAsImage(self.rezGrid)
+
+    def generatePreviews(self):
+        saveHeightmap('preview')
+        saveRezGrid()
+
 
     def cleanSlice(self, data, lower, upper, prefix):
         data = np.clip(data, lower, upper)
         suffix = ('%s-%s' % (lower, upper))
         print('generating image with bounds %s' % suffix)
-        saveAsImage(data, 'slices/%s/%s %s %s' % (self.name, prefix, self.filename, suffix))
+        saveAsImage(data, self.slicesdir + '%s %s %s' % (prefix, self.filename, suffix))
 
     def generateCleanCuts(self, minimum, layerHeight):
         numLayers = int((self.cleanedGrid.max() - minimum)/layerHeight)
@@ -168,8 +211,11 @@ class surveyor:
             self.cleanSlice(self.cleanedGrid, lower, upper, str(i).zfill(4))
             i = i+1
 
+    def rezGrid(self):
+        self.rezedGrid = map(rezRow, self.eGrid)
 
 
+junkSample = json.loads('{"elevation": 0, "location": {"lat": 0, "lng": 0}, "resolution": 0}')
 
 def makeJunkData(samples):
     junkData = []
@@ -177,16 +223,15 @@ def makeJunkData(samples):
         junkData.append(junkSample)
     return junkData
 
+
 def getFragmentSamples(desiredSamples):
     if desiredSamples > config['max_samples_per_request']:
         return getFragmentSamples(desiredSamples/2)
     return int(math.floor(desiredSamples))
 
 
-
 def getLat(point):
     return point['location']['lng']
-
 
 
 def clipLowerBound(data, lowerBound):
@@ -206,36 +251,6 @@ def convertToImage(data):
 def saveAsImage(data, filename):
     imageData = convertToImage(data)
     imageData.save(filename + '.png')
-
-def makeSlice(data, lower, upper):
-    data = np.clip(data, lower, upper)
-    suffix = ('%s-%s' % (lower, upper))
-    print('generating image with bounds %s' % suffix)
-    saveAsImage(data, 'slices/tester/' + suffix)
-
-def generateCuts(data, min, numLayers):
-    layerHeight = (data.max() - min) / numLayers
-
-    for i in range(1, numLayers+1):
-        upper = (data.max() - (layerHeight * (i-1)))
-        lower = (data.max() - (layerHeight * i))
-        
-        makeSlice(data, lower, upper)
-
-def generateCleanCuts(data, min, layerHeight):
-
-    i=0
-    while (i * layerHeight) < data.max():
-        upper = (min + (layerHeight * (i+1)))
-        lower = (min + (layerHeight * i))
-        cleanSlice(data, lower, upper, i)
-        i = i+1
-
-def cleanSlice(data, lower, upper, prefix):
-    data = np.clip(data, lower, upper)
-    suffix = ('%s-%s' % (lower, upper))
-    print('generating image with bounds %s' % suffix)
-    saveAsImage(data, 'slices/tester/' + str(prefix).zfill(4) + '. ' + suffix)
         
 
 def showImage(data):
@@ -253,10 +268,6 @@ def cleanRow(row):
 def cleanGrid(grid):
     cleanedGrid = map(cleanRow, grid)
     return cleanedGrid
-
-def findRawRez(grid):
-    rezGrid = map(rezRow, grid)
-    return rezGrid
 
 def getRez(location):
     return location['resolution']

@@ -98,7 +98,7 @@ def nameLookup(name, locations):
 
 def ensure_dir(directory):
     #directory = os.path.dirname(file_path)
-    print('checking if %s exists.' % directory)
+    #print('making sure %s directory exists.' % directory)
     if not os.path.isdir(directory):
         print("%s doesn't exist. Creating..." % directory)
         try:
@@ -106,7 +106,7 @@ def ensure_dir(directory):
         except:
             print("error",sys.exc_info()[0],"occured.")
 
-    print("is %s a directory? %s" % (directory, os.path.isdir(directory)))
+    #print("is %s a directory? %s" % (directory, os.path.isdir(directory)))
 
 
 def empty_dir(directory):
@@ -114,4 +114,7 @@ def empty_dir(directory):
     files = filter( lambda f: not f.startswith('.'), os.listdir(directory))
     for f in files:
         os.remove(directory + '/' + f)
+
+def getVisibleFiles(path):
+    return filter( lambda f: not f.startswith('.'), os.listdir(path))
 

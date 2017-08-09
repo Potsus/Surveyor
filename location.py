@@ -19,7 +19,7 @@ class Location(Base):
     south = Column(types.Float(precision=32))
     east  = Column(types.Float(precision=32))
     west  = Column(types.Float(precision=32))
-    grids = relationship("Grid")
+    #grids = relationship("Grid")
     #END TABLE SETUP
 
     #define a location
@@ -68,10 +68,13 @@ class Location(Base):
         self.west  = location['bounds']['west']
 
     #deprecated
-    def toYaml(self):
-        #locations[sel] = self.serialize()
-        saveYaml(self.serialize(), 'locations')
+    def toYamlDb(self):
+        toYaml('locations')
 
+    #deprecated
+    def toYaml(self, filename):
+        #locations[sel] = self.serialize()
+        saveYaml(self.serialize(), filename)
 
 
 #geolocate a place and return it as a location
