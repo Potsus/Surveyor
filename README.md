@@ -9,3 +9,7 @@ tester = Location(name='Australia', north=-0.6911343999999999, south=-51.6633232
 
 
 psql -d surveydb -U surveyuser
+
+
+install cairo
+brew install cairo

@@ -34,6 +34,7 @@ class surveyor:
 
         self.quality = 64
         self.tick = baseTick
+        self.currentLine = 0
         self.setup()
         self.updateProps()
 
@@ -57,26 +58,30 @@ class surveyor:
 
     def scan(self):
         if self.eGrid != []:
+            self.resumeScan()
             return False
         elif self.loadArea():
+            self.resumeScan()
             return True
         else:
-            choice = raw_input('fetching grid sized %s x %s is this ok? (y/n) ' % (self.xResolution, self.yResolution))
-            if choice != 'y':
-                #quit if we don't want to continue
-                exit()
+            self.getGrid()
 
-            #get data from google
-            for y in range (0, self.yResolution):
+    def getGrid(self):
+        choice = raw_input('fetching grid sized %s x %s from row %s is this ok? (y/n) ' % (self.xResolution, self.yResolution, self.currentLine))
+        if choice != 'y':
+            #quit if we don't want to continue
+            return False
 
-                sampleLat = self.north - (self.tick * y)
-                print 'fetching gridline %s of %s' % (str(y), self.yResolution)
-                row = self.getRow(sampleLat)
-                self.eGrid.append(row)
-                self.cleanGrid.append(cleanRow(row))
-                #print(' complete')
+        #get data from google
+        for y in range (self.currentLine, self.yResolution):
 
-            self.saveCollectedData()
+            sampleLat = self.north - (self.tick * y)
+            print 'fetching gridline %s of %s' % (str(y), self.yResolution)
+            row = self.getRow(sampleLat)
+            self.eGrid.append(row)
+            #self.cleanGrid.append(cleanRow(row))
+            #print(' complete')
+        self.saveCollectedData()
 
 
     def getRow(self, lat):
@@ -93,7 +98,10 @@ class surveyor:
             x += samplesToRequest
         return row
 
-
+    def resumeScan(self):
+        if self.checkCompleteness() == False:
+                self.clipJunk()
+                self.getGrid()
     
     def requestLineFragment(self, lineLat, samples, start):
         #if we've run out of keys return junk data
@@ -118,13 +126,18 @@ class surveyor:
 
         return responseData['results']
 
-    def getRawData(self):
-        if self.eGrid == []:
-            self.scan()
-        return self.eGrid
+    def checkCompleteness(self):
+        for i, row in enumerate(self.eGrid):
+            if checkRow(row):
+                self.currentLine = i
+                print('scan incomplete on row: %s' % i)
+                return False
+        print('scan is complete')
+        return True
 
-    def getData(self):
-        return self.cleanGrid
+    def clipJunk(self):
+        del self.eGrid[self.currentLine:]
+
 
     def saveCollectedData(self):
         if self.eGrid != []:
@@ -183,16 +196,16 @@ class surveyor:
         self.cleanedGrid = np.array(cleanGrid(self.eGrid))
 
     def saveHeightmap(self, filename):
-        extractHeights()
+        self.extractHeights()
         saveAsImage(clipLowerBound(self.cleanedGrid, self.cleanedGrid.min()), self.rootdir + filename)
 
     def saveRezGrid(self):
         self.rezGrid()
-        saveAsImage(self.rezGrid)
+        saveAsImage(self.rezedGrid, self.rootdir + 'rezolution map')
 
     def generatePreviews(self):
-        saveHeightmap('preview')
-        saveRezGrid()
+        self.saveHeightmap('preview')
+        self.saveRezGrid()
 
 
     def cleanSlice(self, data, lower, upper, prefix):
@@ -203,8 +216,7 @@ class surveyor:
 
     def generateCleanCuts(self, minimum, layerHeight):
         numLayers = int((self.cleanedGrid.max() - minimum)/layerHeight)
-        ensure_dir('slices/'+self.name)
-        empty_dir('slices/%s' % self.name)
+        empty_dir(self.slicesdir + self.name)
         for i in range(0, numLayers):
             upper = (minimum + (layerHeight * (i+1)))
             lower = (minimum + (layerHeight * i))
@@ -212,7 +224,10 @@ class surveyor:
             i = i+1
 
     def rezGrid(self):
-        self.rezedGrid = map(rezRow, self.eGrid)
+        self.rezedGrid = np.array(map(rezRow, self.eGrid))
+
+    def listScans(self):
+        return getVisibleFiles(self.rawdir)
 
 
 junkSample = json.loads('{"elevation": 0, "location": {"lat": 0, "lng": 0}, "resolution": 0}')
@@ -275,4 +290,7 @@ def getRez(location):
 def rezRow(row):
     rezRow = map(getRez, row)
     return rezRow
+
+def checkRow(row):
+    return row[0]['resolution'] == 0
 

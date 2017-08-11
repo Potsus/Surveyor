@@ -96,11 +96,13 @@ def yn():
 print('starting surveyor')
 
 mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
+print('available scans:')
+print(mapper.listScans())
 setQuality(mapper)
 mapper.scan()
-mapper.extractHeights()
-saveAsImage(clipLowerBound(mapper.cleanedGrid, mapper.cleanedGrid.min()), 'heightmaps/' + mapper.filename)
-mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 5)
+#mapper.extractHeights()
+#saveAsImage(clipLowerBound(mapper.cleanedGrid, mapper.cleanedGrid.min()), 'heightmaps/' + mapper.filename)
+#mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 5)
 
 #cleanedData = np.array(cleanGrid(mapper.getRawData()))
 #generateCuts(cleanedData, -25, 50)
