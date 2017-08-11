@@ -45,12 +45,14 @@ class surveyor:
         self.maptilesdir = self.rootdir + 'maptiles/'
         self.slicesdir   = self.rootdir + 'slices/'
         self.vectorsdir  = self.rootdir + 'vectors/'
+        self.heightsdir  = self.rootdir + 'heightmaps/'
 
         ensure_dir(self.rootdir)
         ensure_dir(self.rawdir)
         ensure_dir(self.maptilesdir)
         ensure_dir(self.slicesdir)
         ensure_dir(self.vectorsdir)
+        ensure_dir(self.heightsdir)
 
         self.loc = Location(self.name , self.north , self.south , self.east , self.west)
 
@@ -215,8 +217,9 @@ class surveyor:
         saveAsImage(data, self.slicesdir + '%s %s %s' % (prefix, self.filename, suffix))
 
     def generateCleanCuts(self, minimum, layerHeight):
+        self.extractHeights()
         numLayers = int((self.cleanedGrid.max() - minimum)/layerHeight)
-        empty_dir(self.slicesdir + self.name)
+        empty_dir(self.slicesdir)
         for i in range(0, numLayers):
             upper = (minimum + (layerHeight * (i+1)))
             lower = (minimum + (layerHeight * i))
@@ -247,30 +250,6 @@ def getFragmentSamples(desiredSamples):
 
 def getLat(point):
     return point['location']['lng']
-
-
-def clipLowerBound(data, lowerBound):
-    return np.clip(data, lowerBound, data.max())
-
-def compressRange(data):
-    return (255*(data - np.max(data))/-np.ptp(data)).astype(int)
-
-def convertToImage(data):
-    imageData = compressRange(data)
-    imageData = Image.fromarray(imageData.astype('uint8'))
-    imageData = PIL.ImageOps.invert(imageData)
-    imageData = imageData.transpose(Image.FLIP_LEFT_RIGHT)
-    return imageData
-
-
-def saveAsImage(data, filename):
-    imageData = convertToImage(data)
-    imageData.save(filename + '.png')
-        
-
-def showImage(data):
-    image = convertToImage(data)
-    image.show()
 
 
 def getElevation(location):

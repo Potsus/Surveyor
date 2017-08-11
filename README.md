@@ -13,3 +13,10 @@ psql -d surveydb -U surveyuser
 
 install cairo
 brew install cairo
+
+brew install pkg-config
+
+curl -L https://www.cairographics.org/releases/cairo-1.14.6.tar.xz -o cairo.tar.xz
+tar -xf cairo.tar.xz && cd cairo-1.14.6
+./configure --prefix=/usr/local --disable-dependency-tracking
+make install

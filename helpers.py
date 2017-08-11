@@ -3,6 +3,8 @@ import math
 import numpy as np 
 import yaml
 import os
+from PIL import Image
+import PIL.ImageOps
 
 def importOrderedJson(filename):
     from collections import OrderedDict
@@ -117,4 +119,27 @@ def empty_dir(directory):
 
 def getVisibleFiles(path):
     return filter( lambda f: not f.startswith('.'), os.listdir(path))
+
+
+def saveAsImage(data, filename):
+    imageData = convertToImage(data)
+    imageData.save(filename + '.png')
+        
+
+def showImage(data):
+    image = convertToImage(data)
+    image.show()
+
+def clipLowerBound(data, lowerBound):
+    return np.clip(data, lowerBound, data.max())
+
+def compressRange(data):
+    return (255*(data - np.max(data))/-np.ptp(data)).astype(int)
+
+def convertToImage(data):
+    imageData = compressRange(data)
+    imageData = Image.fromarray(imageData.astype('uint8'))
+    imageData = PIL.ImageOps.invert(imageData)
+    imageData = imageData.transpose(Image.FLIP_LEFT_RIGHT)
+    return imageData
 

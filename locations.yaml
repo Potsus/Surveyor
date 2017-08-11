@@ -9,16 +9,9 @@ Australia:
   bounds:
     east: 156.405367
     north: -10.545047
-    south: -44.399020
-    west: 111.536820
+    south: -44.39902
+    west: 111.53682
   name: Australia
-North Australia:
-  bounds:
-    east: 166.7429167 
-    north: -0.6911343999999999
-    south: -51.66332320000001
-    west: 100.0911072
-  name: North Australia
 Grand Canyon:
   bounds:
     east: -111.8002234
@@ -40,6 +33,13 @@ New Zeland:
     south: -52.6195826
     west: 165.8700053
   name: New Zealand
+North Australia:
+  bounds:
+    east: 166.7429167
+    north: -0.6911343999999999
+    south: -51.66332320000001
+    west: 100.0911072
+  name: North Australia
 The United Kingdom:
   bounds:
     east: 1.762995
@@ -47,6 +47,13 @@ The United Kingdom:
     south: 49.8823322
     west: -8.6494473
   name: United Kingdom
+mosquito island:
+  bounds:
+    east: -64.3896745
+    north: 18.5153781
+    south: 18.5069182
+    west: -64.40033199999999
+  name: Mosquito Island
 phil:
   bounds:
     east: -74.925779
