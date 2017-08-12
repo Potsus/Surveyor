@@ -47,6 +47,13 @@ The United Kingdom:
     south: 49.8823322
     west: -8.6494473
   name: United Kingdom
+iceland:
+  bounds:
+    east: -12.2388001
+    north: 67.2466
+    south: 62.4819
+    west: -26.2572999
+  name: Iceland
 mosquito island:
   bounds:
     east: -64.3896745
@@ -61,6 +68,13 @@ phil:
     south: 39.841952
     west: -75.304807
   name: Philadelphia
+switzerland:
+  bounds:
+    east: 10.4923401
+    north: 47.8084546
+    south: 45.81792
+    west: 5.95608
+  name: Switzerland
 ti:
   bounds:
     east: -75.740578
