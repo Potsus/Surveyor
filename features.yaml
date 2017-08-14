@@ -1,0 +1,33 @@
+- all #selects all features.
+- administrative: #selects all administrative areas. Styling affects only the labels of administrative areas, not the geographical borders or fill.
+  - country #selects countries.
+  - land_parcel #selects land parcels.
+  - locality #selects localities.
+  - neighborhood #selects neighborhoods.
+  - province #selects provinces.
+- landscape: #selects all landscapes.
+  - man_made #selects structures built by humans.
+  - natural: #selects natural features.
+    - landcover #selects landcover features.
+    - terrain #selects terrain features.
+- poi: #selects all points of interest.
+  - attraction #selects tourist attractions.
+  - business #selects businesses.
+  - government #selects government buildings.
+  - medical #selects emergency services, including hospes, police, doctors, and others.
+  - park #selects parks.
+  - place_of_worship #selects places of worship, including churches, temples, mosques, and others.
+  - school #selects schools.
+  - sports_complex #selects sports complexes.
+- road: #selects all roads.
+  - arterial #selects arterial roads.
+  - highway: #selects highways.
+    - controlled_access #selects highways with controlled access.
+  - local #selects local roads.
+- transit: #selects all transit stations and lines.
+  - line #selects transit lines.
+  - station: #selects all transit stations.
+    - airport #selects airports.
+    - bus #selects bus stops.
+    - rail #selects rail stations.
+- water #selects all water

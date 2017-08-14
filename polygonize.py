@@ -231,12 +231,8 @@ def cleanupShapes():
 
 
 orderPoints()
-#orderPointsOld()
 
 cleanupShapes()
-
-#smoo = smoothShape(80)
-#shapes.append(smoo)
 
 filename = (path + "terrain")
 

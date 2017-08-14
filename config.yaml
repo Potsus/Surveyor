@@ -18,13 +18,19 @@ filetree:
   slicedir: 'slices'
   vectordir: 'vectors'
 
-maptype: "road"
-scale: 2
-size: "320x320"
+mapOptions:
+  maptype: "road"
+  scale: 2
+  size: "320x320"
 
 max_samples_per_request: 512
 
 useCache: 1
 
+blankStyle:
+  elementType: all
+  featureType: all
+  stylers:
+  - visibility: 'off'
 
 ...

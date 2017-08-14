@@ -8,7 +8,7 @@ class edgeFinder:
         
         self.height, self.width = data.shape
 
-        self.edges = np.zeros((self.height, self.width))   
+        self.clearEdges()
 
         #get all neighbors of a given point
         #the naming is super fucky here because of the different way coords and array coords work
@@ -30,6 +30,9 @@ class edgeFinder:
                     self.edges[y][x] = 1
                     #out += '  edge'
                 #print out
+
+    def clearEdges(self):
+        self.edges = np.zeros((self.height, self.width)) 
 
 
     def checkEdge(self, x, y):
@@ -61,9 +64,18 @@ class edgeFinder:
         return buds
 
 
+    def showOutline(self, depth):
+        self.clearEdges()
+        self.clipped = np.clip(self.data, depth, depth + 1)
+        self.clipped = self.clipped - depth
+
+        self.markEdges()
+        showImage(self.edges)
+
 
     def pointsAtDepth(self, depth):
 
+        self.clearEdges()
         self.clipped = np.clip(self.data, depth, depth + 1)
         self.clipped = self.clipped - depth
 

@@ -45,8 +45,6 @@ def writeJsonToFile(variable, filename):
         json.dump(variable, outfile, ensure_ascii=False)
 
 
-
-
 def feetToInches(feet):
     return feet * 12
 
@@ -140,6 +138,13 @@ def convertToImage(data):
     imageData = compressRange(data)
     imageData = Image.fromarray(imageData.astype('uint8'))
     imageData = PIL.ImageOps.invert(imageData)
-    imageData = imageData.transpose(Image.FLIP_LEFT_RIGHT)
+    #imageData = imageData.transpose(Image.FLIP_LEFT_RIGHT)
     return imageData
+
+def locInList(needle, haystack):
+        try:
+            i = haystack.index(needle)
+            return i
+        except ValueError:
+            return False
 
