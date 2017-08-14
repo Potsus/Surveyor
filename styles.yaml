@@ -1,98 +1,84 @@
 - elementType: geometry
   featureType: landscape.natural
-  stylers:
-    hue: '#00cc66'
-    lightness: 50
-    saturation: 100
-    visibility: simplified
+  hue: '#00cc66'
+  lightness: 50
+  saturation: 100
+  visibility: simplified
 - elementType: geometry
   featureType: poi.business
-  stylers:
-    hue: '#ff9900'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#ff9900'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: transit
-  stylers:
-    hue: '#ff0000'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#ff0000'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: labels
   featureType: road
-  stylers:
-    hue: '#000000'
-    lightness: 50
-    saturation: 100
-    visibility: 'off'
+  hue: '#000000'
+  lightness: 50
+  saturation: 100
+  visibility: 'off'
 - elementType: geometry
   featureType: poi.park
-  stylers:
-    hue: '#00ff00'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#00ff00'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.attraction
-  stylers:
-    hue: '#aa00ff'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#aa00ff'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.medical
-  stylers:
-    hue: '#ff9999'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#ff9999'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.school
-  stylers:
-    hue: '#cc6600'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#cc6600'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.government
-  stylers:
-    hue: '#222222'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#222222'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.business
-  stylers:
-    hue: '#0088ff'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#0088ff'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: poi.place_of_worship
-  stylers:
-    hue: '#ffff00'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#ffff00'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: road.highway
-  stylers:
-    hue: '#000000'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#000000'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: geometry
   featureType: road.arterial
-  stylers:
-    hue: '#444444'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#444444'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'
 - elementType: all
   featureType: landscape.man_made
-  stylers:
-    hue: '#ff00ff'
-    lightness: 50
-    saturation: 100
-    visibility: 'on'
+  hue: '#ff00ff'
+  lightness: 50
+  saturation: 100
+  visibility: 'on'

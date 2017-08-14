@@ -13,8 +13,8 @@ logging.debug('This is a log message.')
 #my stuff
 #TODO put in a function to allow edit in window
 from helpers import *
-OPTIONS = importJson('options.json')
-STYLES = OPTIONS.pop('styles')
+OPTIONS = importYaml('config')
+STYLES = importYaml('styles')
 _STYLE_STRING = stylesToString(STYLES)
 logging.debug('style string: '+_STYLE_STRING)
 
