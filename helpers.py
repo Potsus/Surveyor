@@ -5,6 +5,11 @@ import yaml
 import os
 from PIL import Image
 import PIL.ImageOps
+import ujson
+
+def superJsonImport(filename):
+    with open( (filename + '.json') ) as json_data:
+        return ujson.load(json_data)
 
 def importOrderedJson(filename):
     from collections import OrderedDict
@@ -134,8 +139,23 @@ def clipLowerBound(data, lowerBound):
 def compressRange(data):
     return (255*(data - np.max(data))/-np.ptp(data)).astype(int)
 
+def convertToArray(data):
+    if type(data) == list:
+        imageData = np.array(data)
+    elif type(data) == np.ndarray:
+        imageData = data
+    else:
+        try:
+            imageData = np.array(data)
+        except(e):
+            print("that didn't work")
+            print(e.message())
+    return imageData
+
 def convertToImage(data):
-    imageData = compressRange(data)
+    imageData = convertToArray(data)
+    
+    imageData = compressRange(imageData)
     imageData = Image.fromarray(imageData.astype('uint8'))
     imageData = PIL.ImageOps.invert(imageData)
     #imageData = imageData.transpose(Image.FLIP_LEFT_RIGHT)
@@ -148,3 +168,67 @@ def locInList(needle, haystack):
         except ValueError:
             return False
 
+def yn():
+    ans = raw_input("y/n? ")
+    if ans.lower() == 'y':
+        return True
+    return False
+
+def writeCsv(data, filename):
+    import csv
+    with open(filename + ".csv", "wb") as f:
+        writer = csv.writer(f, dialect='excel')
+        writer.writerows(data)
+
+def loadCsv(filename):
+    import csv
+    data = []
+    with open(filename + '.csv', 'rb') as csvfile:
+        reader = csv.reader(csvfile, dialect='excel')
+        for row in reader:
+            data.append(row)
+        return data
+
+def gridToFloats(grid):
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                grid[i][j] = float(grid[i][j])
+        return grid
+
+def getLocation():
+    locations = importYaml('locations')
+
+    print 'pick a location to scan:'
+    locChoice = raw_input(str(locations.keys()) + ': ')
+
+    if keyExists(locations, locChoice):
+        location = locations[locChoice]
+    else:
+        print("not a listed location, geocoding...")
+        geocode_result = gmaps.geocode(locChoice)
+        print('found : ' + geocode_result[0]['address_components'][0]['long_name'])
+        #check if the location is already in the list but just mistyped
+        if nameLookup(geocode_result[0]['address_components'][0]['long_name'], locations) == False:
+            print('not listed under a different name, adding to locations list...')
+            #create a location
+            location = {}
+            location['name'] = geocode_result[0]['address_components'][0]['long_name']
+            location['bounds'] = {}
+            location['bounds']['north'] = geocode_result[0]['geometry']['viewport']['northeast']['lat']
+            location['bounds']['south'] = geocode_result[0]['geometry']['viewport']['southwest']['lat']
+            location['bounds']['east']  = geocode_result[0]['geometry']['viewport']['northeast']['lng']
+            location['bounds']['west']  = geocode_result[0]['geometry']['viewport']['southwest']['lng']
+
+            locations[locChoice] = location
+
+            saveYaml(locations, 'locations')
+        else:
+            location = nameLookup(geocode_result[0]['address_components'][0]['long_name'], locations)
+    return location
+
+def getValue(message, testfunc):
+    value = raw_input(str(message)+' ')
+    if testfunc(value):
+        return value
+    else:
+        getValue(message, testfunc)

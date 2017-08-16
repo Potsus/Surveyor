@@ -83,13 +83,12 @@ def setQuality(surv):
     if yn() == False:
         setQuality(surv)
 
-
-def yn():
-    ans = raw_input("Y/N?")
-    if ans.lower() == 'y':
-        return True
-    return False
-
+def getValue(message, testfunc):
+    value = raw_input(message)
+    if testfunc(value):
+        return value
+    else: 
+        getValue(message, testfunc)
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -100,6 +99,7 @@ print('available scans:')
 print(mapper.listScans())
 setQuality(mapper)
 mapper.scan()
+mapper.generatePreviews()
 #mapper.extractHeights()
 #saveAsImage(clipLowerBound(mapper.cleanedGrid, mapper.cleanedGrid.min()), 'heightmaps/' + mapper.filename)
 #mapper.generateCleanCuts(int(mapper.cleanedGrid.min()), 5)

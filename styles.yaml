@@ -1,84 +1,57 @@
-- elementType: geometry
-  featureType: landscape.natural
-  hue: '#00cc66'
-  lightness: 50
-  saturation: 100
+- element: geometry
+  feature: landscape.natural
+  color: '0x00cc66'
+
   visibility: simplified
-- elementType: geometry
-  featureType: poi.business
-  hue: '#ff9900'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: transit
-  hue: '#ff0000'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: labels
-  featureType: road
-  hue: '#000000'
-  lightness: 50
-  saturation: 100
+- element: geometry
+  feature: poi.business
+  color: '0xff9900'
+
+- element: geometry
+  feature: transit
+  color: '0xff0000'
+
+- element: labels
+  feature: road
   visibility: 'off'
-- elementType: geometry
-  featureType: poi.park
-  hue: '#00ff00'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.attraction
-  hue: '#aa00ff'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.medical
-  hue: '#ff9999'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.school
-  hue: '#cc6600'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.government
-  hue: '#222222'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.business
-  hue: '#0088ff'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: poi.place_of_worship
-  hue: '#ffff00'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: road.highway
-  hue: '#000000'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: geometry
-  featureType: road.arterial
-  hue: '#444444'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
-- elementType: all
-  featureType: landscape.man_made
-  hue: '#ff00ff'
-  lightness: 50
-  saturation: 100
-  visibility: 'on'
+  
+- element: geometry
+  feature: poi.park
+  color: '0x00ff00'
+
+- element: geometry
+  feature: poi.attraction
+  color: '0xaa00ff'
+
+- element: geometry
+  feature: poi.medical
+  color: '0xff9999'
+
+- element: geometry
+  feature: poi.school
+  color: '0xcc6600'
+
+- element: geometry
+  feature: poi.government
+  color: '0x222222'
+
+- element: geometry
+  feature: poi.business
+  color: '0x0088ff'
+
+- element: geometry
+  feature: poi.place_of_worship
+  color: '0xffff00'
+
+- element: geometry
+  feature: road.highway
+  color: '0x000000'
+
+- element: geometry
+  feature: road.arterial
+  color: '0x444444'
+
+- element: all
+  feature: landscape.man_made
+  color: '0xff00ff'
+

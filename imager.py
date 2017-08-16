@@ -8,11 +8,11 @@ locations = importYaml('locations')
 
 
 #present location options
-def getChoice:
+def getChoice():
     return raw_input('pick a location to scan ' + str(locations.keys()) + ' :')
 #locChoice = 'vi'
 
-def setChoice:
+def setChoice():
     locChoice = getChoice()
 
     #load selection data
@@ -32,7 +32,7 @@ class MainWindow():
 
     def __init__(self, main):
 
-        path = 'slices/%s/' % location['name']
+        path = 'Locations/%s/slices/' % location['name']
 
         #get the dimensions of the images we're working with
         self.files = filter( lambda f: not f.startswith('.'), os.listdir(path))

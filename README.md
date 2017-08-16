@@ -20,3 +20,7 @@ curl -L https://www.cairographics.org/releases/cairo-1.14.6.tar.xz -o cairo.tar.
 tar -xf cairo.tar.xz && cd cairo-1.14.6
 ./configure --prefix=/usr/local --disable-dependency-tracking
 make install
+
+
+#for easier sed replacements in osx
+brew install gnu-sed

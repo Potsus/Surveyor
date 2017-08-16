@@ -5,6 +5,8 @@ from scipy.interpolate import splprep, splev
 import sys
 import math
 
+#TODO: actually figure out what the water level is
+
 class Shaper:
 
     colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]

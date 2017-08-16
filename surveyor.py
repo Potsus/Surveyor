@@ -1,13 +1,10 @@
 
 from datetime import datetime
 import requests
-from PIL import Image
-import PIL.ImageOps
 from io import BytesIO
 import json
 import numpy as np
 import os.path
-import yaml
 import gc
 
 from helpers import *
@@ -31,6 +28,7 @@ class surveyor:
         self.east  = east
         self.west  = west
         self.eGrid = []
+        self.rezedGrid = []
 
         self.quality = 64
         self.tick = baseTick
@@ -46,6 +44,7 @@ class surveyor:
         self.slicesdir   = self.rootdir + 'slices/'
         self.vectorsdir  = self.rootdir + 'vectors/'
         self.heightsdir  = self.rootdir + 'heightmaps/'
+        self.rezdir      = self.rootdir + 'resolutions/'
 
         ensure_dir(self.rootdir)
         ensure_dir(self.rawdir)
@@ -53,6 +52,8 @@ class surveyor:
         ensure_dir(self.slicesdir)
         ensure_dir(self.vectorsdir)
         ensure_dir(self.heightsdir)
+        ensure_dir(self.rezdir)
+
 
         self.loc = Location(self.name , self.north , self.south , self.east , self.west)
 
@@ -62,7 +63,8 @@ class surveyor:
         if self.eGrid != []:
             self.resumeScan()
             return False
-        elif self.loadArea():
+        elif self.loadHeights():
+            self.loadRez()
             self.resumeScan()
             return True
         else:
@@ -80,10 +82,10 @@ class surveyor:
             sampleLat = self.north - (self.tick * y)
             print 'fetching gridline %s of %s' % (str(y), self.yResolution)
             row = self.getRow(sampleLat)
-            self.eGrid.append(row)
-            #self.cleanGrid.append(cleanRow(row))
+            self.eGrid.append(cleanRow(row))
+            #self.rezedGrid.append(rezRow(row))
             #print(' complete')
-        self.saveCollectedData()
+        self.save()
 
 
     def getRow(self, lat):
@@ -139,14 +141,17 @@ class surveyor:
 
     def clipJunk(self):
         del self.eGrid[self.currentLine:]
+        del self.rezedGrid[self.currentLine:]
 
 
-    def saveCollectedData(self):
+    def save(self):
         if self.eGrid != []:
-            writeJsonToFile(self.eGrid, self.rawdir + self.filename)
+            writeCsv(self.eGrid, self.rawdir + self.filename)
+        if self.rezedGrid != []:
+            writeCsv(self.rezedGrid, self.rezdir + self.filename)
 
     def setQuality(self, quality):
-        self.saveCollectedData()
+        self.save()
         self.clearData()
         self.quality = quality
         self.updateProps()
@@ -161,16 +166,24 @@ class surveyor:
 
     def clearData(self):
         self.eGrid = []
-        self.cleanGrid = []
         gc.collect()
 
 
-    def loadArea(self):
+    def loadHeights(self):
         rawfile = self.rawdir + self.filename
-        #if i already have data load it
-        if os.path.isfile(rawfile + '.json') & config['useCache'] == 1:
-            print('loading data from ' + rawfile + '.json')
-            self.eGrid = importOrderedJson(rawfile)
+        if os.path.isfile(rawfile + '.csv') & config['useCache'] == 1:
+            print('loading data from ' + rawfile + '.csv')
+            self.eGrid = loadCsv(rawfile)
+            self.eGrid = gridToFloats(self.eGrid)
+            return True
+        return False
+
+    def loadRez(self):
+        rezfile = self.rezdir + self.filename
+        if os.path.isfile(rezfile + '.csv') & config['useCache'] == 1:
+            print('loading data from ' + rezfile + '.csv')
+            self.rezedGrid = loadCsv(rezfile)
+            self.rezedGrid = gridToFloats(self.rezedGrid)
             return True
         return False
 
@@ -194,20 +207,18 @@ class surveyor:
     def useNextKey(self):
         self.keyNum += 1
 
-    def extractHeights(self):
-        self.cleanedGrid = np.array(cleanGrid(self.eGrid))
 
     def saveHeightmap(self, filename):
-        self.extractHeights()
-        saveAsImage(clipLowerBound(self.cleanedGrid, self.cleanedGrid.min()), self.rootdir + filename)
+        if self.eGrid != []:
+            saveAsImage(self.eGrid, self.rootdir + filename)
 
     def saveRezGrid(self):
-        self.rezGrid()
-        saveAsImage(self.rezedGrid, self.rootdir + 'rezolution map')
+        if self.rezedGrid != []:
+            saveAsImage(self.rezedGrid, self.rootdir + 'rezolution map')
 
     def generatePreviews(self):
         self.saveHeightmap('preview')
-        self.saveRezGrid()
+        #self.saveRezGrid()
 
 
     def cleanSlice(self, data, lower, upper, prefix):
@@ -217,23 +228,20 @@ class surveyor:
         saveAsImage(data, self.slicesdir + '%s %s %s' % (prefix, self.filename, suffix))
 
     def generateCleanCuts(self, minimum, layerHeight):
-        self.extractHeights()
-        numLayers = int((self.cleanedGrid.max() - minimum)/layerHeight)
+        numLayers = int((self.eGrid.max() - minimum)/layerHeight)
         empty_dir(self.slicesdir)
         for i in range(0, numLayers):
             upper = (minimum + (layerHeight * (i+1)))
             lower = (minimum + (layerHeight * i))
-            self.cleanSlice(self.cleanedGrid, lower, upper, str(i).zfill(4))
+            self.cleanSlice(self.eGrid, lower, upper, str(i).zfill(4))
             i = i+1
 
-    def rezGrid(self):
-        self.rezedGrid = np.array(map(rezRow, self.eGrid))
 
     def listScans(self):
         return getVisibleFiles(self.rawdir)
 
 
-junkSample = json.loads('{"elevation": 0, "location": {"lat": 0, "lng": 0}, "resolution": 0}')
+junkSample = json.loads('{"elevation": null, "location": {"lat": 0, "lng": 0}, "resolution": null}')
 
 def makeJunkData(samples):
     junkData = []
@@ -247,11 +255,6 @@ def getFragmentSamples(desiredSamples):
         return getFragmentSamples(desiredSamples/2)
     return int(math.floor(desiredSamples))
 
-
-def getLat(point):
-    return point['location']['lng']
-
-
 def getElevation(location):
     return location['elevation']
 
@@ -260,8 +263,12 @@ def cleanRow(row):
     return cleanedRow
 
 def cleanGrid(grid):
-    cleanedGrid = map(cleanRow, grid)
-    return cleanedGrid
+    eGrid = map(cleanRow, grid)
+    return eGrid
+
+def rezGrid(grid):
+    rGrid = map(rezRow, grid)
+    return rGrid
 
 def getRez(location):
     return location['resolution']
@@ -271,5 +278,5 @@ def rezRow(row):
     return rezRow
 
 def checkRow(row):
-    return row[0]['resolution'] == 0
+    return row[0] == None
 

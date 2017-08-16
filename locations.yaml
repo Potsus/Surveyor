@@ -1,3 +1,10 @@
+'12':
+  bounds:
+    east: -83.04703429999999
+    north: 47.0062383
+    south: 41.586746
+    west: -123.8155389
+  name: U.S. 12
 Amsterdam:
   bounds:
     east: 5.068372600000001
@@ -54,6 +61,13 @@ iceland:
     south: 62.4819
     west: -26.2572999
   name: Iceland
+madagascar:
+  bounds:
+    east: 50.9985001
+    north: -11.4369999
+    south: -26.2146
+    west: 42.7368
+  name: Madagascar
 mosquito island:
   bounds:
     east: -64.3896745

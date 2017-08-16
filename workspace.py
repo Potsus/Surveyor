@@ -1,7 +1,13 @@
-from helpers import importYaml
-import requests
-import googlemaps
-from GooMPy import GooMPy
+from helpers import *
+#import requests
+#import googlemaps
+import math
+import PIL.Image
+import cStringIO
+import urllib
+import os
+import time
+from hashlib import md5
 
 styles    = importYaml('styles')
 config    = importYaml('config')
@@ -14,34 +20,34 @@ options = config['mapOptions']
 staticMapUrl = config['urls']['staticMap']
 blankStyle = config['blankStyle']
 
-gmaps = googlemaps.Client(key=config['keys'][0])
+OPTIONS = importYaml('config')
+STYLES = importYaml('styles')
+_STYLE_STRING = stylesToString(STYLES)
 
-isoStyles = {}
+_EARTHPIX = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
+_DEGREE_PRECISION = 4  # Number of decimal places for rounding coordinates
+_TILESIZE = 640        # Larget tile we can grab without paying
+_GRABRATE = 2          # Fastest rate at which we can download tiles without paying
 
-def isolateFeature(feature):
-    out = [blankStyle]
+_pixrad = _EARTHPIX / math.pi #the radius of a pixel
 
-    for style in styles:
-        if style['featureType'] == feature:
-            style['hue'] = '#ffffff'
-            style['visibility'] = 'on'
-            out.append(style)
-    return out
-
-for style in styles:
-    isoStyles[style['featureType']] = isolateFeature(style['featureType'])
-
-#queryString = staticMapUrl+'?'+objectToString(options, '=', '&')+'&'+stylesToString(styles)+'&key='+config['keys'][keyNum]
-
-
+#gmaps = googlemaps.Client(key=config['keys'][0])
+#
+#isoStyles = {}
+#
+#def isolateFeature(feature):
+#    out = [blankStyle]
+#
+#    for style in styles:
+#        if style['featureType'] == feature:
+#            style['hue'] = '#ffffff'
+#            style['visibility'] = 'on'
+#            out.append(style)
+#    return out
+#
 #for style in styles:
-#    style['lightness'] = 50
-#    style['saturation'] = 100
+#    isoStyles[style['featureType']] = isolateFeature(style['featureType'])
 
-
-#style = styles[0]
-
-#print(styleString(style))
 
 loc = locations['vi']
 north = loc['bounds']['north']
@@ -54,33 +60,12 @@ widthDeg = loc['bounds']['west']-loc['bounds']['east']
 center['lng'] = loc['bounds']['south']+((heightDeg)/2)
 center['lat'] = loc['bounds']['west']+((widthDeg)/2)
 
-import math
-import PIL.Image
-import cStringIO
-import urllib
-import os
-import time
-from hashlib import md5
+zoom = 17 #ideal zoom
+#zoom = 14
 
-import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-#logging.debug('This is a log message.')
+path = 'Locations/%s/' % loc['name']
+filename = path + '%s zoom'
 
-#my stuff
-#TODO put in a function to allow edit in window
-from helpers import *
-OPTIONS = importYaml('config')
-STYLES = importYaml('styles')
-_STYLE_STRING = stylesToString(STYLES)
-#logging.debug('style string: '+_STYLE_STRING)
-
-
-_EARTHPIX = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
-_DEGREE_PRECISION = 4  # Number of decimal places for rounding coordinates
-_TILESIZE = 640        # Larget tile we can grab without paying
-_GRABRATE = 4          # Fastest rate at which we can download tiles without paying
-
-_pixrad = _EARTHPIX / math.pi #the radius of a pixel
  
 def _new_image(width, height):
 
@@ -93,20 +78,21 @@ def _roundto(value, digits):
 def _pixels_to_degrees(pixels, zoom):
     return pixels * 2 ** (21 - zoom)
 
-def _grab_tile(lat, lon, zoom, maptype, _TILESIZE, sleeptime):
+def getTile(lat, lon, zoom, _TILESIZE, sleeptime):
+    #print('grabbing %s, %s' % (lat, lon))
 
 
     urlbase = 'https://maps.googleapis.com/maps/api/staticmap?center=%f,%f&zoom=%d&maptype=%s&size=%dx%d'
     urlbase +="&"+_STYLE_STRING
     urlbase += _KEY
 
-    #logging.debug('in grabtile: '+_STYLE_STRING)
+    maptype = 'roadmap'
 
     specs = lat, lon, zoom, maptype, _TILESIZE, _TILESIZE
 
     name = md5(('%f_%f_%d_%s_%d_%d' % specs) + _STYLE_STRING).hexdigest()
 
-    filename = 'mapscache/' + name + '.png'
+    filename = path + 'maptiles/' + name + '.png'
 
     tile = None
 
@@ -134,76 +120,79 @@ def _pix_to_lat(k, latpix, ntiles, _TILESIZE, zoom):
 
     return math.degrees(math.pi/2 - 2 * math.atan(math.exp(((latpix + _pixels_to_degrees((k-ntiles/2)*_TILESIZE, zoom)) - _EARTHPIX) / _pixrad))) 
 
-def fetchTiles(latitude, longitude, zoom, maptype, radius_meters=None, default_ntiles=4):
-    '''
-    Fetches tiles from GoogleMaps at the specified coordinates, zoom level (0-22), and map type ('roadmap', 
-    'terrain', 'satellite', or 'hybrid').  The value of radius_meters deteremines the number of tiles that will be 
-    fetched; if it is unspecified, the number defaults to default_ntiles.  Tiles are stored as png images 
-    in the mapscache folder.
-    '''
- 
-    latitude = _roundto(latitude, _DEGREE_PRECISION)
-    longitude = _roundto(longitude, _DEGREE_PRECISION)
-
-    # https://groups.google.com/forum/#!topic/google-maps-js-api-v3/hDRO4oHVSeM
-    pixels_per_meter = 2**zoom / (156543.03392 * math.cos(math.radians(latitude)))
-
-    # number of tiles required to go from center latitude to desired radius in meters
-    ntiles = default_ntiles if radius_meters is None else int(round(2 * pixels_per_meter / (_TILESIZE /2./ radius_meters))) 
-
-    lonpix = _EARTHPIX + longitude * math.radians(_pixrad)
-
-    sinlat = math.sin(math.radians(latitude))
-    latpix = _EARTHPIX - _pixrad * math.log((1 + sinlat)/(1 - sinlat)) / 2
-
-    bigsize = ntiles * _TILESIZE
-    bigimage = _new_image(bigsize, bigsize)
-
-    for j in range(ntiles):
-        lon = _pix_to_lon(j, lonpix, ntiles, _TILESIZE, zoom)
-        for k in range(ntiles):
-            lat = _pix_to_lat(k, latpix, ntiles, _TILESIZE, zoom)
-            tile = _grab_tile(lat, lon, zoom, maptype, _TILESIZE, 1./_GRABRATE)
-            bigimage.paste(tile, (j*_TILESIZE,k*_TILESIZE))
-
-    west = _pix_to_lon(0, lonpix, ntiles, _TILESIZE, zoom)
-    east = _pix_to_lon(ntiles-1, lonpix, ntiles, _TILESIZE, zoom)
-
-    north = _pix_to_lat(0, latpix, ntiles, _TILESIZE, zoom)
-    south = _pix_to_lat(ntiles-1, latpix, ntiles, _TILESIZE, zoom)
-
-    return bigimage, (north,west), (south,east)
-
 def fetchArea(north, south, east, west, zoom, maptype):
-    latitude  = south+((north-south)/2)
-    longitude = west+((west-east)/2)
 
-    pixels_per_meter = 2**zoom / (156543.03392 * math.cos(math.radians(latitude)))
+    print('creating image size %sx%s' % (pixwid, pixhigh))
+    if yn() == False:
+        exit()
+    bigimage = _new_image(pixwid, pixhigh)
 
+    print('starting retrieval')
+    for i in range(wtiles):
+        curLng = (east + (i * wstep) + wstep)
+        for j in range(htiles):
+            curLat = (north + (j * hstep) + hstep)
+            print('getting tile %sx%s' % (i,j))
+            tile = getTile(curLat, curLng, zoom, _TILESIZE, 1./_GRABRATE)
+            bigimage.paste(tile, (i*_TILESIZE,j*(_TILESIZE-cropFactor)))
 
-    lonpix = _EARTHPIX + longitude * math.radians(_pixrad)
-
-    sinlat = math.sin(math.radians(latitude))
-    latpix = _EARTHPIX - _pixrad * math.log((1 + sinlat)/(1 - sinlat)) / 2
-
-
+    bigimage.save(filename + '.png')
 
 
 latitude  = center['lat']
 longitude = center['lng']
-zoom = 4
+#i think this should be the right zoom for all the features i want
 
+print('calculating stuff')
 from geopy.distance import vincenty
 topDist = vincenty((north,east), (north, west)).meters
+leftDist = vincenty((north,east), (south, east)).meters
+radius_meters = topDist
+
 print(topDist)
 
-pixels_per_meter = 2**zoom / (156543.03392 * math.cos(math.radians(latitude)))
+def getZoom():
+    quality = raw_input('pick a zoom level 17 is our ideal ')
+    if canCastToInt(quality) == False:
+        print("couldn't get a number there, defaulting to 19")
+        quality = 19
+    else: quality = int(quality)
+    return quality
 
+def setZoom():
+    global zoom
+    zoom = getZoom()
 
-lonpix = _EARTHPIX + longitude * math.radians(_pixrad)
+    pixels_per_meter = 2**zoom / (156543.03392 * math.cos(math.radians(latitude)))
 
-sinlat = math.sin(math.radians(latitude))
-latpix = _EARTHPIX - _pixrad * math.log((1 + sinlat)/(1 - sinlat)) / 2
+    lonpix = _EARTHPIX + longitude * math.radians(_pixrad)
+
+    sinlat = math.sin(math.radians(latitude))
+    latpix = _EARTHPIX - _pixrad * math.log((1 + sinlat)/(1 - sinlat)) / 2
+
+    ntiles = int(round(2 * pixels_per_meter / (_TILESIZE /2./ radius_meters)))
+
+    pixwid = math.ceil(topDist/pixels_per_meter)
+    pixhigh = math.ceil(leftDist/pixels_per_meter)
+
+    #we need to lose the bottom 22 pixels to cut out the google logo
+
+    wtiles = math.ceil(pixwid/_TILESIZE)
+    htiles = math.ceil(pixhigh/(_TILESIZE-22))
+
+    print('image would be %spx by %spx' % (pixwid, pixhigh))
+    print('%s tiles by %s tiles' % (wtiles, htiles))
+    print('we would need to make %s requests per feature' % (wtiles * htiles))
+    print('est time to completion ~%s' % ((wtiles * htiles)/(_GRABRATE/2)))
+
+    print('sample %s at %s by %s?' % (loc['name'], wtiles, htiles))
+    if yn() == False:
+        zoom = getZoom()
+    return zoom
+
+zoom = setZoom()
+
+fetchArea(north, south, east, west, zoom, 'roadmap')
 
 
 
