@@ -7,9 +7,21 @@ features = importYaml('features')
 styles   = importYaml('styles')
 
 blankStyle = dict()
-  blankStyle['element'] = 'all'
-  blankStyle['feature'] = 'all'
-  blankStyle['visibility'] = 'off'
+blankStyle['element']    = 'all'
+blankStyle['feature']    = 'all'
+blankStyle['visibility'] = 'off'
+
+showWater = dict()
+showWater['feature']    = 'water'
+showWater['element']    = 'geometry'
+showWater['color']      = '0x000000'
+showWater['visibility'] = 'on'
+
+showLand = dict()
+showLand['feature']    = 'landscape'
+showLand['element']    = 'geometry'
+showLand['color']      = '0x000000'
+showLand['visibility'] = 'on'
 
 def isolateFeature(feature):
     out = []
@@ -23,12 +35,10 @@ def isolateFeature(feature):
     out.append(style)
 
     if 'landscape' in feature:
-        water = dict()
-        water['feature']    = 'water'
-        water['element']    = 'geometry'
-        water['color']      = '0x000000'
-        water['visibility'] = 'on'
-        out.append(style)
+        out.append(showWater)
+
+    if 'water' in feature:
+        out.append(showLand)
 
     print(out)
     return out

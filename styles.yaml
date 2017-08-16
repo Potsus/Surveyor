@@ -89,44 +89,43 @@ default:
   feature: landscape.man_made
 landscape:
 - *id001
-- &id002
-  color: '0x000000'
+- color: '0xffffff'
   element: geometry
   feature: landscape
   visibility: 'on'
-- *id002
+- &id002
+  color: '0x000000'
+  element: geometry
+  feature: water
+  visibility: 'on'
 landscape.man_made:
 - *id001
-- &id003
-  color: '0x000000'
+- color: '0xffffff'
   element: geometry
   feature: landscape.man_made
   visibility: 'on'
-- *id003
+- *id002
 landscape.natural:
 - *id001
-- &id004
-  color: '0x000000'
+- color: '0xffffff'
   element: geometry
   feature: landscape.natural
   visibility: 'on'
-- *id004
+- *id002
 landscape.natural.landcover:
 - *id001
-- &id005
-  color: '0x000000'
+- color: '0xffffff'
   element: geometry
   feature: landscape.natural.landcover
   visibility: 'on'
-- *id005
+- *id002
 landscape.natural.terrain:
 - *id001
-- &id006
-  color: '0x000000'
+- color: '0xffffff'
   element: geometry
   feature: landscape.natural.terrain
   visibility: 'on'
-- *id006
+- *id002
 poi:
 - *id001
 - color: '0xffffff'
@@ -252,4 +251,8 @@ water:
 - color: '0xffffff'
   element: geometry
   feature: water
+  visibility: 'on'
+- color: '0x000000'
+  element: geometry
+  feature: landscape
   visibility: 'on'

@@ -207,7 +207,6 @@ class surveyor:
     def useNextKey(self):
         self.keyNum += 1
 
-
     def saveHeightmap(self, filename):
         if self.eGrid != []:
             saveAsImage(self.eGrid, self.rootdir + filename)

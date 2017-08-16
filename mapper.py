@@ -14,8 +14,7 @@ styles    = importYaml('styles')
 config    = importYaml('config')
 locations = importYaml('locations')
 
-staticMapUrl = config['urls']['staticMap']
-styles = importYaml('styles')
+STATIC_MAP_URL = config['urls']['staticMap']
 
 EARTHPIX = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
 DEGREE_PRECISION = 4  # Number of decimal places for rounding coordinates
@@ -30,6 +29,7 @@ class mapper:
     keyNum = 0
     keys   = config['keys']
     key    = keys[keyNum]
+    errorTile = PIL.Image.open(config['errorImage'])
 
     def __init__(self, name, north, south, east, west):
         self.name = name
@@ -41,12 +41,13 @@ class mapper:
         self.topDist = vincenty((self.north,self.east), (self.north, self.west)).meters
         self.leftDist = vincenty((self.north,self.east), (self.south, self.east)).meters
 
-        self.zoom = 17
+        self.zoom = config['mapOptions']['zoom']
+        self.mapType = config['mapOptions']['mapType']
 
         self.path = 'Locations/%s/' % self.name
         self.tilesPath = self.path + 'maptiles/' 
 
-        self.styleString = stylesToString(styles)
+        self.styleString = stylesToString(styles['default'])
 
         self.calculate()
 
@@ -56,8 +57,14 @@ class mapper:
 
     def setStyle(self, style):
         self.styleString = stylesToString(style)
+        self.updateUrlBase()
 
-    def next
+    def setMapType(self, mapType):
+        if locInList(mapType, config['mapTypes'])
+
+    def useNextKey():
+        self.keyNum += 1
+        self.key = keys[self.keyNum]
 
     def _pix_to_lon(self, j):
         return math.degrees((self.lonpix + _pixels_to_degrees(((j)-self.wtiles/2)*(TILESIZE-LOGO_CROP), self.zoom) - EARTHPIX) / PIXRAD)
@@ -89,16 +96,23 @@ class mapper:
         self.wstep = (self.widthDeg*(((self.wtiles*TILESIZE)/self.pixels_per_meter)/self.topDist))/(self.wtiles*2)
         self.hstep = (self.heightDeg*(((self.htiles*TILESIZE)/self.pixels_per_meter)/self.leftDist))/(self.htiles*2)
 
-        print('image would be %spx by %spx' % (self.pixwid, self.pixhigh))
+        print('')
+        print('Image would be %spx by %spx' % (self.pixwid, self.pixhigh))
         print('%s tiles by %s tiles' % (self.wtiles, self.htiles))
-        print('we would need to make %s requests per feature' % (self.wtiles * self.htiles))
-        print('est time to completion ~%s' % ((self.wtiles * self.htiles)/(GRABRATE/2)))
+        print('We would need to make %s requests per feature' % (self.wtiles * self.htiles))
+        print('Estimated time to completion ~%s' % ((self.wtiles * self.htiles)/(GRABRATE/2)))
 
-
+    def updateUrlBase(self):
+        self.urlbase  = staticMapUrl + '?center=%f,%f&zoom=%d&size=%dx%d'
+        if self.mapType != 'roadmap':
+            self.urlbase += "&maptype=" + self.mapType
+        if self.styleString != '':
+            self.urlbase += "&" + self.styleString
+        self.urlbase += "&key=" + self.key
 
     def fetchArea(self):
-        print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
 
+        print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
         self.bigimage = _new_image(self.pixwid, self.pixhigh)
 
         print('starting retrieval')
@@ -115,14 +129,9 @@ class mapper:
 
 
     def getTile(self, lat, lon):
-        if self.keyNum > 
-        #print('grabbing %s, %s' % (lat, lon))
-
-        urlbase = staticMapUrl + '?center=%f,%f&zoom=%d&size=%dx%d'
-        urlbase +="&" + self.styleString
-        urlbase +=self.key
-
-        maptype = 'roadmap'
+        if self.keyNum >= len(self.keys):
+            #we're out of keys for today, return the error image before we make another request
+            tile = errorTile
 
         specs = lat, lon, self.zoom+1, TILESIZE, TILESIZE
 
@@ -145,7 +154,7 @@ class mapper:
             if hash(tile) != config['errorHash']:
                 tile.save(filename)
             else:
-                self.nextKey()
+                self.useNextKey()
                 return self.getTile(lat, lon)
 
             time.sleep(SLEEPTIME) # Choke back speed to avoid maxing out limit
