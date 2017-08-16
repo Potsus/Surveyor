@@ -63,7 +63,7 @@ class surveyor:
         if self.eGrid != []:
             self.resumeScan()
             return False
-        elif self.loadHeights():
+        elif config['useCache'] and self.loadHeights():
             self.loadRez()
             self.resumeScan()
             return True
@@ -278,5 +278,6 @@ def rezRow(row):
     return rezRow
 
 def checkRow(row):
+    #TODO: could potentially leave a half finished row
     return row[0] == junkDatum
 

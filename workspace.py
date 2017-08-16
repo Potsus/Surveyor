@@ -9,38 +9,38 @@ import os
 import time
 from hashlib import md5
 
-styles    = importYaml('styles')
-config    = importYaml('config')
-locations = importYaml('locations')
+styles           = importYaml('styles')
+config           = importYaml('config')
+locations        = importYaml('locations')
 
-keyNum = 0
-_KEY = config['keys'][keyNum]
+keyNum           = 0
+_KEY             = config['keys'][keyNum]
 
-options = config['mapOptions']
-staticMapUrl = config['urls']['staticMap']
-blankStyle = config['blankStyle']
+options          = config['mapOptions']
+staticMapUrl     = config['urls']['staticMap']
+blankStyle       = config['blankStyle']
 
-OPTIONS = importYaml('config')
-STYLES = importYaml('styles')
-_STYLE_STRING = stylesToString(STYLES)
+OPTIONS          = importYaml('config')
+STYLES           = importYaml('styles')
+_STYLE_STRING    = stylesToString(STYLES)
 
-_EARTHPIX = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
-_DEGREE_PRECISION = 4  # Number of decimal places for rounding coordinates
-_TILESIZE = 640        # Larget tile we can grab without paying
-_GRABRATE = 2          # Fastest rate at which we can download tiles without paying
+_EARTHPIX        = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
+_DEGREE_PRECISION= 4  # Number of decimal places for rounding coordinates
+_TILESIZE        = 640        # Larget tile we can grab without paying
+_GRABRATE        = 2          # Fastest rate at which we can download tiles without paying
 
-_pixrad = _EARTHPIX / math.pi #the radius of a pixel
+_pixrad          = _EARTHPIX / math.pi #the radius of a pixel
 
 #gmaps = googlemaps.Client(key=config['keys'][0])
 #
 
 
 
-loc = locations['vi']
+loc   = locations['vi']
 north = loc['bounds']['north']
 south = loc['bounds']['south']
-east = loc['bounds']['east']
-west = loc['bounds']['west']
+east  = loc['bounds']['east']
+west  = loc['bounds']['west']
 center = {}
 heightDeg = loc['bounds']['north']-loc['bounds']['south']
 widthDeg = loc['bounds']['west']-loc['bounds']['east']

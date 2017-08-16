@@ -13,12 +13,13 @@ errorHash: '9bbe3528194a37629b9b8836c6b9a441'
 
 filetree:
   config: 'config.yaml'
-  preview: 'quicklook.png'
+  elevpreview: 'quicklook.png'
   rezpreview: 'resolution.png'
   rawdir: 'raw'
   maptilesdir: 'maptiles'
   slicedir: 'slices'
   vectordir: 'vectors'
+  rezdir: 'resoltions'
 
 mapOptions:
   maptype: "road"
@@ -26,13 +27,8 @@ mapOptions:
   size: "640x640"
 
 max_samples_per_request: 512
+max_requests_per_day: 25000
 
-useCache: 1
-
-blankStyle:
-  elementType: all
-  featureType: all
-  stylers:
-  - visibility: 'off'
+useCache: True
 
 ...

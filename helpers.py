@@ -124,6 +124,9 @@ def empty_dir(directory):
 def getVisibleFiles(path):
     return filter( lambda f: not f.startswith('.'), os.listdir(path))
 
+def fileExists(filename):
+    return os.path.isfile(filename)
+
 
 def saveAsImage(data, filename):
     imageData = convertToImage(data)
@@ -245,5 +248,13 @@ def nullToGarbage(val):
 
 def hash(var):
     return hashlib.md5(var).hexdigest()
+
+def hashCompare(a,b):
+    return hash(a) == hash(b)
+
+
+
+
+
 
 
