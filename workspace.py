@@ -33,20 +33,7 @@ _pixrad = _EARTHPIX / math.pi #the radius of a pixel
 
 #gmaps = googlemaps.Client(key=config['keys'][0])
 #
-#isoStyles = {}
-#
-#def isolateFeature(feature):
-#    out = [blankStyle]
-#
-#    for style in styles:
-#        if style['featureType'] == feature:
-#            style['hue'] = '#ffffff'
-#            style['visibility'] = 'on'
-#            out.append(style)
-#    return out
-#
-#for style in styles:
-#    isoStyles[style['featureType']] = isolateFeature(style['featureType'])
+
 
 
 loc = locations['vi']

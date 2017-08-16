@@ -12,9 +12,10 @@ import yaml
 
 from calculate import TICK as tick
 from helpers import *
-from surveyor import *
 from mapper import mapper
 config = importYaml('config')
+features = importYaml('features')
+styles = importYaml('styles')
 blankStyle = config['blankStyle']
 
 gmaps = googlemaps.Client(key=config['keys'][0])
@@ -30,10 +31,12 @@ def testZoom(zoom):
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-print('starting surveyor')
+print('starting isolator')
+
+location = getLocation()
 
 mapper = mapper(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
-#getValue('what zoom level would you like?', testZoom)
+getValue('what zoom level would you like?', testZoom)
 
 isoStyles = {}
 
@@ -41,15 +44,16 @@ def isolateFeature(feature):
     out = [blankStyle]
 
     for style in styles:
-        if style['featureType'] == feature:
-            style['hue'] = '#ffffff'
+        if style['feature'] == feature:
+            style['color'] = '0xffffff'
             style['visibility'] = 'on'
             out.append(style)
     return out
 
-for  in styles:
-    isoStyles[style['featureType']] = isolateFeature(style['featureType'])
+for feature in features:
+    isoStyles[feature] = isolateFeature(feature)
+    pass
 
-mapper.set
+#mapper.setStyle()
 mapper.fetchArea()
 

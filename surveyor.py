@@ -240,8 +240,8 @@ class surveyor:
     def listScans(self):
         return getVisibleFiles(self.rawdir)
 
-
-junkSample = json.loads('{"elevation": null, "location": {"lat": 0, "lng": 0}, "resolution": null}')
+junkDatum = -1
+junkSample = json.loads('{"elevation": %s, "location": {"lat": 0, "lng": 0}, "resolution": %s}' % (junkDatum, junkDatum))
 
 def makeJunkData(samples):
     junkData = []
@@ -278,5 +278,5 @@ def rezRow(row):
     return rezRow
 
 def checkRow(row):
-    return row[0] == None
+    return row[0] == junkDatum
 

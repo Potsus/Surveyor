@@ -9,6 +9,8 @@ urls:
   staticMap: 'https://maps.googleapis.com/maps/api/staticmap'
   elevation: 'https://maps.googleapis.com/maps/api/elevation/json'
 
+errorHash: '9bbe3528194a37629b9b8836c6b9a441'
+
 filetree:
   config: 'config.yaml'
   preview: 'quicklook.png'

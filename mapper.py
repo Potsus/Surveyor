@@ -25,7 +25,7 @@ styleString = stylesToString(styles)
 _EARTHPIX = 268435456  # Number of pixels in half the earth's circumference at zoom = 21
 _DEGREE_PRECISION = 4  # Number of decimal places for rounding coordinates
 _TILESIZE = 640        # Larget tile we can grab without paying
-_GRABRATE = 2          # Fastest rate at which we can download tiles without paying
+_GRABRATE = 4          # Fastest rate at which we can download tiles without paying
 _pixrad = _EARTHPIX / math.pi
 
 #remove the bottom 22 pixels of each tile
@@ -34,10 +34,12 @@ url = config['urls']['staticMap']
 
 
 class mapper:
-    keyNum = 0
+    keyNum = 1
     key = config['keys'][keyNum]
 
     bottomCrop = 22
+
+    sleeptime = 1./_GRABRATE
 
     def __init__(self, name, north, south, east, west):
         self.name = name
@@ -57,6 +59,19 @@ class mapper:
         self.styleString = stylesToString(styles)
 
         self.calculate()
+
+    def setZoom(self, zoom):
+        self.zoom = zoom
+        self.calculate()
+
+    def setStyle(self, style):
+        self.styleString = stylesToString(style)
+
+    def _pix_to_lon(self, j):
+        return math.degrees((self.lonpix + _pixels_to_degrees(((j)-self.wtiles/2)*(_TILESIZE-self.bottomCrop), self.zoom) - _EARTHPIX) / _pixrad)
+
+    def _pix_to_lat(self, k):
+        return math.degrees(math.pi/2 - 2 * math.atan(math.exp(((self.latpix + _pixels_to_degrees((k-self.htiles/2)*_TILESIZE, self.zoom)) - _EARTHPIX) / _pixrad))) 
 
     def calculate(self):
         self.heightDeg = abs(self.north)-abs(self.south)
@@ -90,37 +105,24 @@ class mapper:
         print('est time to completion ~%s' % ((self.wtiles * self.htiles)/(_GRABRATE/2)))
 
 
-    def setZoom(self, zoom):
-        self.zoom = zoom
-        self.calculate()
-
-    def setStyle(self, style):
-        self.styleString = stylesToString(style)
-
-    def _pix_to_lon(self, j):
-        return math.degrees((self.lonpix + _pixels_to_degrees(((j)-self.wtiles/2)*(_TILESIZE-self.bottomCrop), self.zoom) - _EARTHPIX) / _pixrad)
-
-    def _pix_to_lat(self, k):
-        return math.degrees(math.pi/2 - 2 * math.atan(math.exp(((self.latpix + _pixels_to_degrees((k-self.htiles/2)*_TILESIZE, self.zoom)) - _EARTHPIX) / _pixrad))) 
 
     def fetchArea(self):
         print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
-        #if yn() == False:
-        #    exit()
-
 
         self.bigimage = _new_image(self.pixwid, self.pixhigh)
 
         print('starting retrieval')
         for i in range(self.wtiles):
-            curLng = (self.west + (2*i * self.wstep))
+            curLng = (self.west + (2*i * self.wstep) + self.wstep)
             for j in range(self.htiles):
-                curLat = (self.north - (2*j * self.hstep))
+                curLat = (self.north - (2*j * self.hstep) - self.hstep)
                 print('getting tile %sx%s at %s, %s' % (i,j, curLat, curLng))
                 tile = self.getTile(curLat, curLng)
                 self.bigimage.paste(tile, ((i*_TILESIZE)+i*int(self._pix_to_lat(i)),(j*(_TILESIZE-(self.bottomCrop*2)))-j*int(self._pix_to_lon(j))))
 
         self.bigimage.save(self.path + str(self.zoom) + '.png')
+
+
 
     def getTile(self, lat, lon):
         #print('grabbing %s, %s' % (lat, lon))
@@ -137,8 +139,6 @@ class mapper:
 
         filename = self.path + 'maptiles/' + name + '.png'
 
-        sleeptime = 1./_GRABRATE
-
         tile = None
 
         if os.path.isfile(filename):
@@ -151,13 +151,13 @@ class mapper:
             tile = PIL.Image.open(cStringIO.StringIO(result))
             if not os.path.exists('mapscache'):
                 os.mkdir('mapscache')
-            tile.save(filename)
-            time.sleep(sleeptime) # Choke back speed to avoid maxing out limit
+
+            if hash(tile) != config['errorHash']:
+                tile.save(filename)
+            time.sleep(self.sleeptime) # Choke back speed to avoid maxing out limit
 
         return tile
 
-    def invertZoom(self):
-        return abs(self.zoom -22)
 
 def _new_image(width, height):
 

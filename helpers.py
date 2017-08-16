@@ -6,6 +6,7 @@ import os
 from PIL import Image
 import PIL.ImageOps
 import ujson
+import hashlib
 
 def superJsonImport(filename):
     with open( (filename + '.json') ) as json_data:
@@ -232,3 +233,17 @@ def getValue(message, testfunc):
         return value
     else:
         getValue(message, testfunc)
+
+def arrayAlter(data, needle, alterfunc):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if data[i][j] == needle:
+                data[i][j] = alterfunc(data[i][j])
+
+def nullToGarbage(val):
+    return -1
+
+def hash(var):
+    return hashlib.md5(var).hexdigest()
+
+
