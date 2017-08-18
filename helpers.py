@@ -278,5 +278,27 @@ def drawCross(pic):
 
 
 
+def pilToCairo(data):
+    nptile = data.convert('RBGA')
+    h,w,c = nptile.shape
+    ctile = cairo.ImageSurface.create_for_data(nptile, cairo.FORMAT_RGB24, w,h)
 
+def pil2cairo(im):
+    """Transform a PIL Image into a Cairo ImageSurface."""
+
+    assert sys.byteorder == 'little', 'We don\'t support big endian'
+    if im.mode != 'RGBA':
+        im = im.convert('RGBA')
+
+    s = im.tobytes('raw', 'BGRA')
+    a = array.array('B', s)
+    dest = cairo.ImageSurface(cairo.FORMAT_ARGB32, im.size[0], im.size[1])
+    ctx = cairo.Context(dest)
+    non_premult_src_wo_alpha = cairo.ImageSurface.create_for_data(
+        a, cairo.FORMAT_RGB24, im.size[0], im.size[1])
+    non_premult_src_alpha = cairo.ImageSurface.create_for_data(
+        a, cairo.FORMAT_ARGB32, im.size[0], im.size[1])
+    ctx.set_source_surface(non_premult_src_wo_alpha)
+    ctx.mask_surface(non_premult_src_alpha)
+    return dest
 

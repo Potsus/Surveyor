@@ -7,7 +7,7 @@ import PIL.Image
 import urllib
 import time
 from geopy.distance import vincenty
-import utm
+import cairocffi as cairo
 
 styles    = importYaml('styles')
 config    = importYaml('config')
@@ -83,6 +83,38 @@ class Mapper:
 
 
     def getTile(self, lat, lon):
+
+        specs = lat, lon, self.zoom+1, TILESIZE, TILESIZE
+        name = hash(('%f_%f_%d_%d_%d' % specs) + self.styleString)
+        filename = self.tilesPath + name + '.png'
+        
+        tile = None
+        if config['useCache'] and fileExists(filename):
+            #print('found %s' % filename)
+            tile = PIL.Image.open(filename)
+        else:
+            if self.keyNum >= len(self.keys):
+                print('ran out of keys, filling with junk')
+                return errorTile #we're out of keys for today, return the error image before we make another request
+
+            uri = self.urlbase % specs
+
+            result = urllib.urlopen(uri).read()
+            tile = PIL.Image.open(cStringIO.StringIO(result))
+            ensure_dir('mapscache')
+
+            #if hash(tile) == config['errorHash']:
+            if hash(tile.tobytes()) == self.errorHash:
+                self.useNextKey()
+                return self.getTile(lat, lon)
+            tile.save(filename)
+
+        if config['debug'] == True:
+            tile = drawCross(tile)
+
+        return filename
+
+    def getTileOld(self, lat, lon):
         if self.keyNum >= len(self.keys):
             print('ran out of keys, filling with junk')
             return errorTile #we're out of keys for today, return the error image before we make another request
@@ -257,7 +289,7 @@ class Mapper:
 
 
     #TODO: convert this to use cairo to elimimate subpixel error accumulation
-    def fetchArea(self):
+    def fetchAreaOld(self):
         print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
         self.bigimage = _new_image( int(math.ceil(self.pixwid + abs(int(round(self._pix_to_lat(self.wtiles/2.))))/self.wtiles)), int(math.ceil(self.pixhigh + abs(int(round(self._pix_to_lon(self.htiles/2.))))/self.htiles)))
 
@@ -277,6 +309,35 @@ class Mapper:
                 ) 
 
         self.bigimage.save(self.path + str(self.zoom) + '.png') #save the finished map
+
+    def fetchArea(self):
+        print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
+        self.bigimage = cairo.PDFSurface(self.path + str(self.zoom) + '.pdf', self.pixwid + abs(self._pix_to_lat(self.wtiles/2.))/self.wtiles, self.pixhigh + abs(self._pix_to_lon(self.htiles/2.))/self.htiles)
+        self.cr = cairo.Context(self.bigimage)
+
+        print('starting retrieval')
+        for i in range(self.wtiles):
+            curLng = (self.west + (2*i * self.wstep) + self.wstep)
+            for j in range(self.htiles):
+                curLat = (self.north - (2*j * self.hstep) - self.hstep)
+                print('getting tile %sx%s at %s, %s' % (i,j, curLat, curLng))
+                name = self.getTile(curLat, curLng)
+                tile = cairo.ImageSurface.create_from_png(name)
+
+                time.sleep(SLEEPTIME) # Choke back speed to avoid maxing out limit
+                lPos  = i*(TILESIZE + self._pix_to_lat(i)) #tile size and placement for map to lineup is good
+                lAdj  = (self._pix_to_lat(self.wtiles/2.)/2.) #left adjustment average tile adjustment
+                tPos  = j*(TILESIZE-(LOGO_CROP*2) - self._pix_to_lon(j)) #tile size and placement for map to lineup is good
+                tAdj  = (-self._pix_to_lon(self.htiles/2.)*2) #top adjustment 
+                lPos += lAdj
+                tPos += tAdj
+
+
+                self.cr.set_source_surface(tile, lPos, tPos) 
+                self.cr.paint()
+
+        self.bigimage.write_to_png(self.path + str(self.zoom) + '.png')
+        self.bigimage.finish() #save the finished map
 
 
 def meterScale(lat):
