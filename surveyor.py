@@ -112,9 +112,9 @@ class surveyor:
         if (self.keyNum >= len(config['keys'])):
             return makeJunkData(samples)
 
-        lineLng = self.east - (self.tick * start)
+        lineLng = self.west + (self.tick * start)
 
-        queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (config['urls']['elevation'], lineLat, lineLng, lineLat, lineLng - (self.tick * (samples -1)), samples, config['keys'][self.keyNum])
+        queryString  = "%s?path=%s,%s|%s,%s&samples=%s&key=%s" % (config['urls']['elevation'], lineLat, lineLng, lineLat, lineLng + (self.tick * (samples -1)), samples, config['keys'][self.keyNum])
         response     = requests.get(queryString)
         
         try:
