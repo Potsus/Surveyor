@@ -143,6 +143,8 @@ class surveyor:
         del self.eGrid[self.currentLine:]
         del self.rezedGrid[self.currentLine:]
 
+    def getNpGrid(self):
+        return np.array(self.eGrid)
 
     def save(self):
         if self.eGrid != []:
@@ -209,16 +211,24 @@ class surveyor:
 
     def saveHeightmap(self, filename):
         if self.eGrid != []:
-            saveAsImage(self.eGrid, self.rootdir + filename)
+            saveAsImage(self.eGrid, filename)
 
-    def saveRezGrid(self):
+    def saveClipped(self, minimum):
+        self.makeNpArrays()
+        saveAsImage(clipLowerBound(self.cleanedGrid, minimum), self.rootdir + 'preview')
+
+    def saveRezGrid(self, filename):
         if self.rezedGrid != []:
-            saveAsImage(self.rezedGrid, self.rootdir + 'rezolution map')
+            saveAsImage(self.rezedGrid, filename)
 
     def generatePreviews(self):
-        self.saveHeightmap('preview')
+        self.saveHeightmap(self.rootdir + config['filetree']['elevpreview'])
+        self.saveHeightmap(self.heightsdir + self.filename)
         #self.saveRezGrid()
 
+    def makeNpArrays(self):
+        self.cleanedGrid = np.array(self.eGrid)
+        #self.cleanRez = np.array(self.rezedGrid)
 
     def cleanSlice(self, data, lower, upper, prefix):
         data = np.clip(data, lower, upper)

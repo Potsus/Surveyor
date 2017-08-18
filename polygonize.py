@@ -1,16 +1,23 @@
 import cairocffi as cairo 
 from edger import edgeFinder
 from helpers import *
+from surveyor import surveyor
 
 
 
-path = 'Locations/Mosquito Island/'
+path = 'Locations/The Virgin Islands/'
 
 config = importYaml(path + 'config')
 
-heightmap = np.load(path+'heightmap.npy')
+location = getLocation(locChoice = 'vi')
+
+mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
+mapper.setQuality(16)
+mapper.scan()
+
+#heightmap = np.load(path+'heightmap.npy')
 #heightmap = np.fliplr(heightmap)
-edger = edgeFinder(heightmap)
+edger = edgeFinder(mapper.getNpGrid())
 
 points = edger.pointsAtDepth(10)
 
@@ -21,9 +28,6 @@ shapes = []
 
 colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
 color = 0
-
-
-
 
 
 
@@ -43,28 +47,9 @@ def orderPoints():
                 print('lone point')
                 shapes.append([curPoint])
 
-def orderPointsOld():
-    while points:
-        #points will get popped in odd places and many shapes will be made that should be joined
-        curPoint = points.pop()
-        if not closeShapeOld(curPoint):
-            if not closePointOld(curPoint):
-                print('lone point')
-                shapes.append([curPoint])
-
 
 def closePoint(curPoint):
     buds = closeBuds(curPoint)
-    for bud in buds:
-        i = locInList(bud, points)
-        if i != False:
-            shapes.append([curPoint, points.pop(i)])
-            return True
-
-    return False
-
-def closePointOld(curPoint):
-    buds = closeBudsOld(curPoint)
     for bud in buds:
         i = locInList(bud, points)
         if i != False:
@@ -78,11 +63,6 @@ def closeBuds(curPoint):
     #remember that the axes are reversed
     return edger.orderedBuds(x,y)
 
-def closeBudsOld(curPoint):
-    x,y = curPoint
-    #remember that the axes are reversed
-    return edger.buds(x,y)
-
 def closeShape(curPoint):
     buds = closeBuds(curPoint)
     for i in range(0, len(shapes)):
@@ -94,20 +74,6 @@ def closeShape(curPoint):
                 shapes[i].append(curPoint)
                 return True
     return False
-
-def closeShapeOld(curPoint):
-    buds = closeBudsOld(curPoint)
-    for i in range(0, len(shapes)):
-        for bud in buds:
-            if bud == shapes[i][0]:
-                shapes[i].insert(0, curPoint)
-                return True
-            elif bud == shapes[i][-1]:
-                shapes[i].append(curPoint)
-                return True
-    return False
-
-
 
 
 

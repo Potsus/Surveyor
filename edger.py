@@ -79,7 +79,6 @@ class edgeFinder:
         self.clipped = np.clip(self.data, depth, depth + 1)
         self.clipped = self.clipped - depth
 
-
         self.markEdges()
 
         #showImage(edges)

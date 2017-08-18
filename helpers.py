@@ -3,7 +3,7 @@ import math
 import numpy as np 
 import yaml
 import os
-from PIL import Image
+from PIL import Image, ImageOps, ImageDraw
 import PIL.ImageOps
 import ujson
 import hashlib
@@ -199,11 +199,13 @@ def gridToFloats(grid):
                 grid[i][j] = float(grid[i][j])
         return grid
 
-def getLocation():
+def getLocation(locChoice=None):
     locations = importYaml('locations')
 
-    print 'pick a location to scan:'
-    locChoice = raw_input(str(locations.keys()) + ': ')
+    if locChoice == None:
+        print 'pick a location to scan:'
+        locChoice = raw_input(str(locations.keys()) + ': ')
+
 
     if keyExists(locations, locChoice):
         location = locations[locChoice]
@@ -252,7 +254,27 @@ def hash(var):
 def hashCompare(a,b):
     return hash(a) == hash(b)
 
+def arrayFlipLR(data):
+    for i in range(0,len(data)):
+        data[i] = list(reversed(data[i]))
+    return data
 
+def drawCross(pic):
+    width, height = pic.size
+    #print('image mode: %s' % pic.mode)
+    #red = (255, 0, 0)
+    pic = pic.convert('RGBA')
+
+    # get a drawing context
+    d = ImageDraw.Draw(pic)
+
+    # draw red lines over image
+    d.line( [(width/2,0),(width/2, height)], fill=(255, 0, 0, 128), width = 1)
+    d.line( [(0,height/2),(width, height/2)], fill=(255, 0, 0, 128), width = 1)
+    d.line((0, 0) + pic.size, fill=(255, 0, 0, 128), width = 1)
+    d.line((0, pic.size[1], pic.size[0], 0), fill=(255, 0, 0, 128), width = 1)
+
+    return pic
 
 
 

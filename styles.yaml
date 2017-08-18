@@ -87,6 +87,53 @@ default:
 - color: '0xff00ff'
   element: all
   feature: landscape.man_made
+nolables:
+- element: labels
+  feature: all
+  visibility: 'off'
+- color: '0x00cc66'
+  element: geometry
+  feature: landscape.natural
+  visibility: simplified
+- color: '0xff9900'
+  element: geometry
+  feature: poi.business
+- color: '0xff0000'
+  element: geometry
+  feature: transit
+- element: labels
+  feature: road
+  visibility: 'off'
+- color: '0x00ff00'
+  element: geometry
+  feature: poi.park
+- color: '0xaa00ff'
+  element: geometry
+  feature: poi.attraction
+- color: '0xff9999'
+  element: geometry
+  feature: poi.medical
+- color: '0xcc6600'
+  element: geometry
+  feature: poi.school
+- color: '0x222222'
+  element: geometry
+  feature: poi.government
+- color: '0x0088ff'
+  element: geometry
+  feature: poi.business
+- color: '0xffff00'
+  element: geometry
+  feature: poi.place_of_worship
+- color: '0x000000'
+  element: geometry
+  feature: road.highway
+- color: '0x444444'
+  element: geometry
+  feature: road.arterial
+- color: '0xff00ff'
+  element: all
+  feature: landscape.man_made
 landscape:
 - *id001
 - color: '0xffffff'
