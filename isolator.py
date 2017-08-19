@@ -18,7 +18,7 @@ location = getLocation(locChoice='vi')
 
 mapper = Mapper(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
 #getValue('what zoom level would you like?', testZoom)
-mapper.setZoom(14)
+mapper.setZoom(13)
 mapper.setStyle(styles['nolables'])
 mapper.fetchArea()
 #mapper.betterFetch()

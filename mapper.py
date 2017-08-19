@@ -168,8 +168,11 @@ class Mapper:
         self.pixhigh = int(math.ceil(self.leftDist*self.pixels_per_meter))
 
 
-        self.wtiles = int(math.ceil(float(self.pixwid)/TILESIZE))
-        self.htiles = int(math.ceil(float(self.pixhigh)/(TILESIZE-LOGO_CROP)))
+        self.wscans = float(self.pixwid)/TILESIZE
+        self.hscans = int(math.ceil(float(self.pixhigh)/(TILESIZE-LOGO_CROP)))
+
+        self.wtiles = int(math.ceil(self.wscans))
+        self.htiles = int(math.ceil(self.hscans))
 
         self.wstep = (self.widthDeg*(((self.wtiles*TILESIZE)/self.pixels_per_meter)/self.topDist))/(self.wtiles*2)
         self.hstep = (self.heightDeg*(((self.htiles*TILESIZE)/self.pixels_per_meter)/self.leftDist))/(self.htiles*2)
@@ -187,7 +190,7 @@ class Mapper:
         print('IDEAL RATIO: %s' % ratio)
         print(' YOUR RATIO: %s' % curRatio)
         print('Image would be %spx by %spx' % (self.pixwid, self.pixhigh))
-        print('%s tiles by %s tiles' % (self.wtiles, self.htiles))
+        print('%s tiles by %s tiles' % (self.wscans, self.hscans))
         print('a width step is %s or %s of the total distance' % (self.wstep, 1/(self.widthDeg/self.wstep)))
         print('a height step is %s or %s of the total distance' % (self.hstep, 1/(self.heightDeg/self.hstep)))
         print('vince says its %s by %s meters' % (self.topDist, self.leftDist))
@@ -312,7 +315,7 @@ class Mapper:
 
     def fetchArea(self):
         print('creating image size %sx%s' % (self.pixwid, self.pixhigh))
-        self.bigimage = cairo.PDFSurface(self.path + str(self.zoom) + '.pdf', self.pixwid + abs(self._pix_to_lat(self.wtiles/2.))/self.wtiles, self.pixhigh + abs(self._pix_to_lon(self.htiles/2.))/self.htiles)
+        self.bigimage = cairo.PDFSurface(self.path + str(self.zoom) + '.pdf', (self.pixwid + abs(self._pix_to_lat(self.wscans/2.))/self.wscans) + self.wscans*2.5, (self.pixhigh + abs(self._pix_to_lon(self.hscans/2.))/self.hscans) + self.hscans*4)
         self.cr = cairo.Context(self.bigimage)
 
         print('starting retrieval')
@@ -325,10 +328,10 @@ class Mapper:
                 tile = cairo.ImageSurface.create_from_png(name)
 
                 time.sleep(SLEEPTIME) # Choke back speed to avoid maxing out limit
-                lPos  = i*(TILESIZE + self._pix_to_lat(i)) #tile size and placement for map to lineup is good
-                lAdj  = (self._pix_to_lat(self.wtiles/2.)/2.) #left adjustment average tile adjustment
-                tPos  = j*(TILESIZE-(LOGO_CROP*2) - self._pix_to_lon(j)) #tile size and placement for map to lineup is good
-                tAdj  = (-self._pix_to_lon(self.htiles/2.)*2) #top adjustment 
+                lPos  = i*(TILESIZE + self._pix_to_lat(i+1))+i*2 #tile size and placement for map to lineup is good
+                lAdj  = (self._pix_to_lat(self.wtiles/2.)/2.)+2 #left adjustment average tile adjustment
+                tPos  = j*(TILESIZE-(LOGO_CROP*2) - self._pix_to_lon(j+1))+j*2 #tile size and placement for map to lineup is good
+                tAdj  = -(self._pix_to_lon(self.htiles/2.)*2)+4 #top adjustment 
                 lPos += lAdj
                 tPos += tAdj
 
