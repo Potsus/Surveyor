@@ -29,6 +29,8 @@ shapes = []
 colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
 color = 0
 
+height = edger.height
+width  = edger.width
 
 
 def nextColor():
@@ -129,8 +131,6 @@ def joinShapes():
 
     return True
 
-#def fixEnds()
-
 def numPoints():
     total = 0
     for shape in shapes:
@@ -183,22 +183,25 @@ def cleanupShapes():
 
     fixEnds()
 
-    padEnds()
-
-    for i in range(0, len(shapes)):
-        shapes[i] = smoothShape(shape=shapes[i], s=80)
-        #shapes[i].reverse()
-
-    clipEnds()
+    
     
 
 
+def smotheShapes():
+    padEnds()
 
+    for i in range(0, len(shapes)):
+        try:
+            shapes[i] = smoothShape(shape=shapes[i], s=80)
+        except:
+            pass
+
+    clipEnds()
 
 
 orderPoints()
 
-cleanupShapes()
+#cleanupShapes()
 
 filename = (path + "terrain")
 

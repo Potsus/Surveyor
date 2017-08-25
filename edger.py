@@ -72,6 +72,14 @@ class edgeFinder:
         self.markEdges()
         showImage(self.edges)
 
+    def getEdges(self, depth):
+        self.clearEdges()
+        self.clipped = np.clip(self.data, depth, depth + 1)
+        self.clipped = self.clipped - depth
+
+        self.markEdges()
+        return self.edges
+
 
     def pointsAtDepth(self, depth):
 

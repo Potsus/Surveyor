@@ -24,3 +24,8 @@ make install
 
 #for easier sed replacements in osx
 brew install gnu-sed
+
+
+install the java development kit, or jdk
+then
+    java -jar heightmap2stl.jar <path to image> <height of model> <height of base>
