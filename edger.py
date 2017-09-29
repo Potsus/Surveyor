@@ -21,7 +21,12 @@ class edgeFinder:
                (0 <= y2 <= self.width-1))] 
 
 
-    def markEdges(self):
+    def markEdges(self, depth):
+        print('marking edges')
+        self.clearEdges()
+        self.clipped = np.clip(self.data, depth, depth + 1)
+        self.clipped = self.clipped - depth
+
         #print('creating edge map')
         for y in range(0, (self.height)):
             for x in range(0, (self.width)):
@@ -65,29 +70,16 @@ class edgeFinder:
 
 
     def showOutline(self, depth):
-        self.clearEdges()
-        self.clipped = np.clip(self.data, depth, depth + 1)
-        self.clipped = self.clipped - depth
-
-        self.markEdges()
+        self.markEdges(depth)
         showImage(self.edges)
 
     def getEdges(self, depth):
-        self.clearEdges()
-        self.clipped = np.clip(self.data, depth, depth + 1)
-        self.clipped = self.clipped - depth
-
-        self.markEdges()
+        self.markEdges(depth)
         return self.edges
 
 
     def pointsAtDepth(self, depth):
-
-        self.clearEdges()
-        self.clipped = np.clip(self.data, depth, depth + 1)
-        self.clipped = self.clipped - depth
-
-        self.markEdges()
+        self.markEdges(depth)
 
         #showImage(edges)
 

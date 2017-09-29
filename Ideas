@@ -1,0 +1,10 @@
+start with all null array of the right size
+create second numpy array of all zeros
+get 2 random elevation values by rand xand y coords and a random direction
+check and make sure they arent already taken
+last ditch repeat values to get missing data
+insert values into first array
+get all non null values from first array and set those values in the second array
+gauusian blur second array
+show image
+repeat untill all values accounted for

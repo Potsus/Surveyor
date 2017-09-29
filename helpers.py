@@ -245,6 +245,12 @@ def arrayAlter(data, needle, alterfunc):
             if data[i][j] == needle:
                 data[i][j] = alterfunc(data[i][j])
 
+def runOnArray(data, func):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            func(data[i][j])
+
+
 def nullToGarbage(val):
     return -1
 

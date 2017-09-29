@@ -2,7 +2,60 @@ import cairocffi as cairo
 from edger import edgeFinder
 from helpers import *
 from surveyor import surveyor
+import skimage.morphology as labeler
 
+def groupPoints(data):
+    print('grouping points')
+    data = labeler.label(data)
+
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            point = data[i][j]
+            if(point != 0):
+                if(point in shapes):
+                    shapes[point].append((i,j))
+                else:
+                    shapes[point] = list()
+                    shapes[point].append((i,j))
+
+def drawShapesToFile(filename):
+
+    surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
+    cr = cairo.Context(surface)
+
+    for key, value in shapes.iteritems():
+        drawShape(value)
+
+def drawShape(points):
+    print('drawing shape length %s' % len(points))
+
+    cr.set_source_rgb(*colors[color])
+    cr.set_line_join(cairo.LINE_JOIN_ROUND)
+    cr.set_line_cap(cairo.LINE_CAP_ROUND)
+    cr.set_line_width(.1)
+
+
+    start = points.pop(0)
+    #remember that the axes are reversed
+    cr.move_to(start[1], start[0])
+
+    for point in points:
+        cr.line_to(point[1], point[0])
+    points.append(start)
+    cr.close_path()
+    cr.stroke()
+    nextColor()
+
+def nextColor():
+    global color
+    if color == len(colors)-1:
+        color = 0
+    else:
+        color += 1
+
+def reduceShapes():
+    for key, value in shapes.iteritems():
+        shapes[key] = smoothShape(shape=value, s=80)
 
 
 path = 'Locations/The Virgin Islands/'
@@ -19,12 +72,12 @@ mapper.scan()
 #heightmap = np.fliplr(heightmap)
 edger = edgeFinder(mapper.getNpGrid())
 
-points = edger.pointsAtDepth(10)
-
+edger.markEdges(10)
+edges = edger.edges
 
 #you have to order the points by their place in the shape
 #NEXT
-shapes = []
+shapes = dict()
 
 colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
 color = 0
@@ -33,12 +86,22 @@ height = edger.height
 width  = edger.width
 
 
-def nextColor():
-    global color
-    if color == len(colors)-1:
-        color = 0
-    else:
-        color += 1
+
+#orderPoints()
+
+#cleanupShapes()
+
+groupPoints(edges)
+
+
+filename = (path + "terrain")
+
+surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
+cr = cairo.Context(surface)
+
+drawShapesToFile(filename)
+
+surface.finish()
 
 def orderPoints():
     while points:
@@ -137,6 +200,20 @@ def numPoints():
         total += len(shape)
     return total
 
+
+
+def closeShape(curPoint):
+    buds = closeBuds(curPoint)
+    for i in range(0, len(shapes)):
+        for bud in buds:
+            if bud == shapes[i][0]:
+                shapes[i].insert(0, curPoint)
+                return True
+            elif bud == shapes[i][-1]:
+                shapes[i].append(curPoint)
+                return True
+    return False
+
 def smoothShape(shape, s=5, k=2, f=4):
     print('creating smooth shape')
     from scipy.interpolate import splprep, splev
@@ -183,9 +260,6 @@ def cleanupShapes():
 
     fixEnds()
 
-    
-    
-
 
 def smotheShapes():
     padEnds()
@@ -197,46 +271,3 @@ def smotheShapes():
             pass
 
     clipEnds()
-
-
-orderPoints()
-
-#cleanupShapes()
-
-filename = (path + "terrain")
-
-surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
-cr = cairo.Context(surface)
-
-def drawShapesToFile(filename):
-
-    surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
-    cr = cairo.Context(surface)
-
-    for shape in shapes:
-        drawShape(shape)
-
-def drawShape(points):
-    print('drawing shape length %s' % len(points))
-
-    cr.set_source_rgb(*colors[color])
-    cr.set_line_join(cairo.LINE_JOIN_ROUND)
-    cr.set_line_cap(cairo.LINE_CAP_ROUND)
-    cr.set_line_width(.1)
-
-
-    start = points.pop(0)
-    #remember that the axes are reversed
-    cr.move_to(start[1], start[0])
-
-    for point in points:
-        cr.line_to(point[1], point[0])
-    points.append(start)
-    cr.close_path()
-    cr.stroke()
-    nextColor()
-
-
-drawShapesToFile(filename)
-
-surface.finish()
