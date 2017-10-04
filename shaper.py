@@ -1,41 +1,63 @@
 import cairocffi as cairo 
-from edger import edgeFinder
 from helpers import *
 from scipy.interpolate import splprep, splev
+import numpy as np
 import sys
 import math
+import skimage.morphology as labeler
+from shape import Shape
+
+#takes a black and white image and converts it to smoothe vector shapes
+#does not do edge detection
+#does not draw the shapes
+#only returns lists of tuples ordered to be drawn
+
 
 #TODO: actually figure out what the water level is
 
 class Shaper:
 
-    colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
-    color = 0
-
     def __init__(self, data):
         self.data = data
-        self.edger = edgeFinder(data)
 
         self.shapes = []
-        self.points = []
-        self.drawables = []
+        self.vectors = []
+        self.groups = dict()
+        self.centers = []
+
+        self.groupPoints()
+        self.createShapes()
+        #self.sortShapes()
+
+    def getConnections(self):
+        lines = []
+        for shape in self.shapes:
+            lines.extend(shape.getConnects())
+        return lines
+
+    def groupPoints(self):
+        data = labeler.label(self.data)
+
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                point = data[i][j]
+                if(point != 0):
+                    if(point in self.groups):
+                        self.groups[point].append((i,j))
+                    else:
+                        self.groups[point] = list()
+                        self.groups[point].append((i,j))
+        
+
+    def createShapes(self):
+        for key, group in self.groups.iteritems():
+            self.shapes.append(Shape(group))
 
 
-    def nextColor(self):
-        if self.color == len(self.colors)-1:
-            self.color = 0
-        else:
-            self.color += 1
-
-    def orderPoints(self):
-        while self.points != []:
-            #points will get popped in odd places and many shapes will be made that should be joined
-            curPoint = self.points.pop()
-            if not self.closeShape(curPoint):
-                if not self.closePoint(curPoint):
-                    print('lone point')
-                    self.shapes.append([curPoint])
-
+    def sortShapes(self):
+        for shape in self.shapes:
+            shape.sortPoints()
+            
 
     def closePoint(self, curPoint):
         buds = self.closeBuds(curPoint)
@@ -93,62 +115,6 @@ class Shaper:
                     self.shapes[i].insert(j, curPoint)
                     print('inserted to the center')
                     return True
-
-    def joinShapes(self):
-        for i in range(0, len(self.shapes)):
-            if type(self.shapes[i]) == tuple or len(self.shapes[i]) == 1:
-                print('attempting mid shape insert')
-                if self.midShape(self.shapes[i][0]):
-                    self.shapes.pop(i)
-                    return False
-                continue
-            #print('checking from the front')
-            buds = self.closeBuds(self.shapes[i][0])
-            for j in range(0, len(self.shapes)):
-                if j == i:
-                    continue
-                for bud in buds:
-                    if bud == self.shapes[j][-1]:
-                        #front of shape i, back of shape j
-                        #append i to j
-                        self.shapes[j].extend(self.shapes.pop(i))
-                        #print('joining self.shapes %s and %s at point %s' % (i, j, bud))
-                        return False
-                    elif bud == self.shapes[j][0]: 
-                        #front of i front of j
-                        #reverse i and append j
-                        self.shapes[i].reverse()
-                        self.shapes[i].extend(self.shapes.pop(j))
-                        #print('joining self.shapes %s and %s at point %s' % (i, j, bud))
-                        return False
-            #print('checking from the back')
-            buds = self.closeBuds(self.shapes[i][-1])
-            for j in range(0, len(self.shapes)):
-                if j == i:
-                    continue
-                for bud in buds:
-                    if bud == self.shapes[j][-1]:
-                        #back of shape i, back of shape j
-                        #i gets reversed and added to back of j
-                        self.shapes[i].reverse()
-                        self.shapes[j].extend(self.shapes.pop(i))
-                        #print('joining self.shapes %s and %s at point %s' % (i, j, bud))
-                        return False
-                    elif bud == self.shapes[j][0]:
-                        #back of shape i, front of shape j
-                        #j goes on the back of i
-                        self.shapes[i].extend(self.shapes.pop(j))
-                        #print('joining self.shapes %s and %s at point %s' % (i, j, bud))
-                        return False
-        return True
-
-    #def fixEnds()
-
-    def numPoints(self):
-        total = 0
-        for shape in self.shapes:
-            total += len(shape)
-        return total
 
     def fixEnds(self):
         for i in range(0, len(self.shapes)):
@@ -232,62 +198,6 @@ class Shaper:
                 self.drawables.append(self.shapes[i].pop())
                 return True
         return False
-        
-
-    def drawShapesToFile(self, filename):
-
-        self.surface = cairo.PDFSurface ((filename+'.pdf'), self.edger.width, self.edger.height)
-        self.cr = cairo.Context(self.surface)
-
-        while self.drawables:
-            self.drawShape(self.drawables.pop())
-
-    def drawShape(self, points):
-        if type(points) == tuple:
-            #its a point, draw a circle i guess?
-            self.drawPoint(points)
-            return
-
-        if len(points) == 1:
-            #its a point, draw a circle i guess?
-            self.drawPoint(points[0])
-            return
-
-        if len(points) == 0:
-            return
-
-        print('drawing shape length %s' % len(points))
-
-        self.cr.set_source_rgb(*self.colors[self.color])
-        self.cr.set_line_join(cairo.LINE_JOIN_ROUND)
-        self.cr.set_line_cap(cairo.LINE_CAP_ROUND)
-        self.cr.set_line_width(.1)
-
-
-        start = points.pop(0)
-        #remember that the axes are reversed
-        self.cr.move_to(start[1], start[0])
-
-        for point in points:
-            self.cr.line_to(point[1], point[0])
-        self.points.append(start)
-        self.cr.close_path()
-        self.cr.stroke()
-        self.nextColor()
-
-    def drawPoint(self, point):
-        print('drawing point %s, %s' % point)
-        self.cr.set_source_rgb(*self.colors[self.color])
-        self.cr.set_line_join(cairo.LINE_JOIN_ROUND)
-        self.cr.set_line_cap(cairo.LINE_CAP_ROUND)
-        self.cr.set_line_width(.1)
-        self.cr.arc(point[1], point[0], 0.2, 0, 2*math.pi)
-        self.cr.stroke()
-        self.nextColor()
-
-
-    def getPointsAtDepth(self, depth):
-        self.points = self.edger.pointsAtDepth(depth)
 
     def createRing(self, depth):
         self.getPointsAtDepth(depth)
@@ -308,24 +218,3 @@ class Shaper:
             self.createRing(minimum + (layerHeight * i))
 
 
-
-
-path = 'Locations/Mosquito Island/'
-filename = (path + "terrain")
-
-#surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
-#cr = cairo.Context(surface)
-
-heightmap = np.load(path+'heightmap.npy')
-shapey = Shaper(heightmap)
-try:
-    shapey.createRing(60)
-    #shapey.createRings(10, 5)
-except Exception, err:
-    sys.stderr.write('ERROR: %sn' % str(err))
-    #print sys.exc_info()[0]
-    shapey.drawables.extend(shapey.shapes)
-
-shapey.drawShapesToFile(filename)
-
-shapey.surface.finish()

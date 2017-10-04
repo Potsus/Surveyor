@@ -57,6 +57,9 @@ def reduceShapes():
     for key, value in shapes.iteritems():
         shapes[key] = smoothShape(shape=value, s=80)
 
+def sortPoints(points):
+    pass
+
 
 path = 'Locations/The Virgin Islands/'
 
@@ -79,7 +82,7 @@ edges = edger.edges
 #NEXT
 shapes = dict()
 
-colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
+colors = [(0.5,0.5,0.5),(1,0,0),(0,1,0),(0,0,1), (1,1,0), (1,0,1), (0,1,1)]
 color = 0
 
 height = edger.height
@@ -91,6 +94,7 @@ width  = edger.width
 
 #cleanupShapes()
 
+#group points by the shape they are a part of
 groupPoints(edges)
 
 
@@ -99,9 +103,15 @@ filename = (path + "terrain")
 surface = cairo.PDFSurface ((filename+'.pdf'), edger.width, edger.height)
 cr = cairo.Context(surface)
 
+#DEBUGGING
+#draw the initial points to the canvas
+saveAsImage(convertToImage(edges), filename)
+background = cairo.ImageSurface.create_from_png('%s.png' % filename)
+cr.set_source_surface(background, 0, 0) 
+cr.paint()
 drawShapesToFile(filename)
 
-surface.finish()
+#surface.finish()
 
 def orderPoints():
     while points:

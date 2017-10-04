@@ -24,7 +24,7 @@ class edgeFinder:
     def markEdges(self, depth):
         print('marking edges')
         self.clearEdges()
-        self.clipped = np.clip(self.data, depth, depth + 1)
+        self.clipped = np.clip(self.data, depth, depth + 0.1)
         self.clipped = self.clipped - depth
 
         #print('creating edge map')
@@ -83,11 +83,13 @@ class edgeFinder:
 
         #showImage(edges)
 
+        return self.edgePoints()
+
+    def edgePoints(self):
         #get the nonzero points
         #returns two arrays of indicies, kinda inconvienient
         xs, ys = self.edges.nonzero()
 
         #combine arrays of indices into a list of tuples
         points = zip(xs, ys)
-
         return points

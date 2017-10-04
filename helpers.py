@@ -7,6 +7,7 @@ from PIL import Image, ImageOps, ImageDraw
 import PIL.ImageOps
 import ujson
 import hashlib
+import operator
 
 def superJsonImport(filename):
     with open( (filename + '.json') ) as json_data:
@@ -308,3 +309,5 @@ def pil2cairo(im):
     ctx.mask_surface(non_premult_src_alpha)
     return dest
 
+def tupleAdd(a,b):
+    return tuple(map(operator.add, a, b))

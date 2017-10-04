@@ -245,6 +245,11 @@ class surveyor:
             self.cleanSlice(self.eGrid, lower, upper, str(i).zfill(4))
             i = i+1
 
+    #resample a specific row
+    def retrieveRow(self, row):
+        pass
+
+
 
     def listScans(self):
         return getVisibleFiles(self.rawdir)
@@ -288,5 +293,6 @@ def rezRow(row):
 
 def checkRow(row):
     #TODO: could potentially leave a half finished row
-    return row[0] == junkDatum
+    return row[-1] == junkDatum
+
 
