@@ -27,8 +27,9 @@ class surveyor:
         self.south = south
         self.east  = east
         self.west  = west
-        self.eGrid = []
-        self.rezedGrid = []
+        self.elevationGrid = []
+        self.heightMap = np.ndarray((0,0))
+        self.rezGrid = []
 
         self.quality = 64
         self.tick = baseTick
@@ -36,6 +37,8 @@ class surveyor:
         self.setup()
         self.updateProps()
 
+
+    ######### BASIC SETUP ###########
 
     def setup(self):
         self.rootdir     = 'Locations/%s/' % self.name
@@ -59,55 +62,72 @@ class surveyor:
 
         self.loc.toYaml(self.rootdir + 'config')
 
-    def scan(self):
-        if self.eGrid != []:
-            self.resumeScan()
-            return False
-        elif config['useCache'] and self.loadHeights():
-            self.loadRez()
-            self.resumeScan()
-            return True
-        else:
-            self.getGrid()
-
-    def getGrid(self):
-        choice = raw_input('fetching grid sized %s x %s from row %s is this ok? (y/n) ' % (self.xResolution, self.yResolution, self.currentLine))
-        if choice != 'y':
-            #quit if we don't want to continue
-            return False
-
-        #get data from google
-        for y in range (self.currentLine, self.yResolution):
-
-            sampleLat = self.north - (self.tick * y)
-            print 'fetching gridline %s of %s' % (str(y), self.yResolution)
-            row = self.getRow(sampleLat)
-            self.eGrid.append(cleanRow(row))
-            #self.rezedGrid.append(rezRow(row))
-            #print(' complete')
+    def setQuality(self, quality):
         self.save()
+        self.clearData()
+        self.quality = quality
+        self.updateProps()
+
+    def updateProps(self):
+        self.tick = baseTick * self.quality
+
+        self.xResolution = self.ticksToResolution(self.east, self.west)
+        self.yResolution = self.ticksToResolution(self.north, self.south)
+
+        self.filename = '%sx%s' % (self.xResolution, self.yResolution)
+        self.elevationGrid = [ [ junkDatum for x in range( self.xResolution ) ] for y in range( self.yResolution ) ]
+
+    def clearData(self):
+        self.elevationGrid = []
+        gc.collect()
+
+    def useNextKey(self):
+        self.keyNum += 1
+
+    def ticksToResolution(self, a,b):
+        #no longer needed because resolution doesn't have to devide into even numbers
+        #pixels should be sampled in the center of their pixel
+        #this will almost never devide evenly for the last line segment in a row
+        #but the deviance is practically nothing for most purposes
+        #return roundToEven(abs(a - b) / TICK)
+        return int(math.ceil(abs(a - b) / (baseTick * self.quality)))
+
+    def scan(self):
+        if config['useCache']:
+            self.load()
+            self.cleanUpScan()
+
+        else:
+            self.sampleRows(self.yResolution)
 
 
-    def getRow(self, lat):
+    ######## DATA RETRIEVAL #########
+
+    def sampleRows(self, rows):
+        if presentYN('Sample %s rows at %s samples per row'):
+            for i, index in enumerate(rows):
+                print('sampling row %s of %s.' % (i, len(rows)))
+                row = self.sampleRow(lat)
+                self.elevationGrid[index] = getRowElevation(row)
+                #self.rezGrid.append(rezRow(row))
+            self.save()
+
+
+    def sampleRow(self, rowIndex):
         x   = 0
         row = []
-        while(x < self.xResolution):
-            #make sure you don't go past elevation resolution
-            samplesToRequest = config['max_samples_per_request']
-            if(x + samplesToRequest > self.xResolution):
-                samplesToRequest = self.xResolution - x
+        lat = self.north - (self.tick * rowIndex)
 
-            row.extend(self.requestLineFragment(lat, samplesToRequest, x))
+        while(x < self.xResolution):
+            #get at most our max samples per request and not more than the difference between x and the xresolution
+            samplesToRequest = min(config['max_samples_per_request'], self.xResolution - x)
+
+            row.extend(self.sampleLineFragment(lat, samplesToRequest, x))
             #print x,
             x += samplesToRequest
         return row
-
-    def resumeScan(self):
-        if self.checkCompleteness() == False:
-                self.clipJunk()
-                self.getGrid()
     
-    def requestLineFragment(self, lineLat, samples, start):
+    def sampleLineFragment(self, lineLat, samples, start):
         #if we've run out of keys return junk data
         if (self.keyNum >= len(config['keys'])):
             return makeJunkData(samples)
@@ -126,109 +146,63 @@ class surveyor:
         if responseData['status'] != 'OK':
             print('response error: %s' % responseData['status'])
             self.useNextKey()
-            return self.requestLineFragment(lineLat, samples, start)
+            return self.sampleLineFragment(lineLat, samples, start)
 
         return responseData['results']
 
-    def checkCompleteness(self):
-        for i, row in enumerate(self.eGrid):
-            if checkRow(row):
-                self.currentLine = i
-                print('scan incomplete on row: %s' % i)
-                return False
-        print('scan is complete')
-        return True
 
-    def clipJunk(self):
-        del self.eGrid[self.currentLine:]
-        del self.rezedGrid[self.currentLine:]
 
-    def getNpGrid(self):
-        return np.array(self.eGrid)
+
+    ########## INTEGRITY CHECK ###########
+
+    def findIncompleteRows(self):
+        incompleteRows = []
+        for index, row in enumerate(self.elevationGrid):
+            if rowIncomplete(row):
+                incompleteRows.append(index)
+        return incompleteRows
+
+
+    def cleanUpScan(self):
+        incompleteRows = self.findIncompleteRows()
+        if incompleteRows != []:
+            print('Found %s incomplete rows. ' % len(incompleteRows))
+            self.sampleRows(incompleteRows)
+        else:
+            print('Scan has no incomplete rows')
+                 
+
+
+    ######### SAVING AND LOADING ##########
 
     def save(self):
-        if self.eGrid != []:
-            writeCsv(self.eGrid, self.rawdir + self.filename)
-        if self.rezedGrid != []:
-            writeCsv(self.rezedGrid, self.rezdir + self.filename)
+        if self.elevationGrid != []:
+            writeCsv(self.elevationGrid, self.rawdir + self.filename)
+        if self.rezGrid != []:
+            writeCsv(self.rezGrid, self.rezdir + self.filename)
 
-    def setQuality(self, quality):
-        self.save()
-        self.clearData()
-        self.quality = quality
-        self.updateProps()
-
-    def updateProps(self):
-        self.tick = baseTick * self.quality
-
-        self.xResolution = self.ticksToResolution(self.east, self.west)
-        self.yResolution = self.ticksToResolution(self.north, self.south)
-
-        self.filename = '%sx%s' % (self.xResolution, self.yResolution)
-
-    def clearData(self):
-        self.eGrid = []
-        gc.collect()
-
-
-    def loadHeights(self):
+    def load(self):
         rawfile = self.rawdir + self.filename
-        if os.path.isfile(rawfile + '.csv') & config['useCache'] == 1:
-            print('loading data from ' + rawfile + '.csv')
-            self.eGrid = loadCsv(rawfile)
-            self.eGrid = gridToFloats(self.eGrid)
-            return True
-        return False
+        self.elevationGrid = loadGridFromFile(rawfile)
 
-    def loadRez(self):
         rezfile = self.rezdir + self.filename
-        if os.path.isfile(rezfile + '.csv') & config['useCache'] == 1:
-            print('loading data from ' + rezfile + '.csv')
-            self.rezedGrid = loadCsv(rezfile)
-            self.rezedGrid = gridToFloats(self.rezedGrid)
-            return True
-        return False
+        self.rezGrid = loadGridFromFile(rezfile)
+        
 
-    def loadFromFile(rawfile):
-        if os.path.isfile(rawfile):
-            print('loading data from ' + rawfile)
-            self.eGrid = importOrderedJson(rawfile)
-            self.xResolution = len(self.eGrid)
-            self.yResolution = len(self.eGrid[0])
-            return True
-        return False
+    def listScans(self):
+        return getVisibleFiles(self.rawdir)
 
-    def ticksToResolution(self, a,b):
-        #no longer needed because resolution doesn't have to devide into even numbers
-        #pixels should be sampled in the center of their pixel
-        #this will almost never devide evenly for the last line segment in a row
-        #but the deviance is practically nothing for most purposes
-        #return roundToEven(abs(a - b) / TICK)
-        return int(math.ceil(abs(a - b) / (baseTick * self.quality)))
 
-    def useNextKey(self):
-        self.keyNum += 1
+
+    ######### CONVENIENCE FUNCTIONS #########
 
     def saveHeightmap(self, filename):
-        if self.eGrid != []:
-            saveAsImage(self.eGrid, filename)
+        if self.elevationGrid != []:
+            saveAsImage(self.elevationGrid, filename)
 
     def saveClipped(self, minimum):
         self.makeNpArrays()
         saveAsImage(clipLowerBound(self.cleanedGrid, minimum), self.rootdir + 'preview')
-
-    def saveRezGrid(self, filename):
-        if self.rezedGrid != []:
-            saveAsImage(self.rezedGrid, filename)
-
-    def generatePreviews(self):
-        self.saveHeightmap(self.rootdir + config['filetree']['elevpreview'])
-        self.saveHeightmap(self.heightsdir + self.filename)
-        #self.saveRezGrid()
-
-    def makeNpArrays(self):
-        self.cleanedGrid = np.array(self.eGrid)
-        #self.cleanRez = np.array(self.rezedGrid)
 
     def cleanSlice(self, data, lower, upper, prefix):
         data = np.clip(data, lower, upper)
@@ -237,22 +211,34 @@ class surveyor:
         saveAsImage(data, self.slicesdir + '%s %s %s' % (prefix, self.filename, suffix))
 
     def generateCleanCuts(self, minimum, layerHeight):
-        numLayers = int((self.eGrid.max() - minimum)/layerHeight)
+        numLayers = int((self.elevationGrid.max() - minimum)/layerHeight)
         empty_dir(self.slicesdir)
         for i in range(0, numLayers):
             upper = (minimum + (layerHeight * (i+1)))
             lower = (minimum + (layerHeight * i))
-            self.cleanSlice(self.eGrid, lower, upper, str(i).zfill(4))
+            self.cleanSlice(self.elevationGrid, lower, upper, str(i).zfill(4))
             i = i+1
 
-    #resample a specific row
-    def retrieveRow(self, row):
-        pass
+    def generatePreviews(self):
+        self.saveHeightmap(self.rootdir + config['filetree']['elevpreview'])
+        self.saveHeightmap(self.heightsdir + self.filename)
+        #self.saveRezGrid()
+
+    def saveRezGrid(self, filename):
+        if self.rezGrid != []:
+            saveAsImage(self.rezGrid, filename)
+
+    def makeNpArrays(self):
+        self.cleanedGrid = np.array(self.elevationGrid)
+        #self.cleanRez = np.array(self.rezGrid)
+
+    def getNpGrid(self):
+        return np.array(self.elevationGrid)
 
 
 
-    def listScans(self):
-        return getVisibleFiles(self.rawdir)
+#functions that do not require access to private data members
+
 
 junkDatum = -1
 junkSample = json.loads('{"elevation": %s, "location": {"lat": 0, "lng": 0}, "resolution": %s}' % (junkDatum, junkDatum))
@@ -269,16 +255,16 @@ def getFragmentSamples(desiredSamples):
         return getFragmentSamples(desiredSamples/2)
     return int(math.floor(desiredSamples))
 
-def getElevation(location):
+def getPointElevation(location):
     return location['elevation']
 
-def cleanRow(row):
-    cleanedRow = map(getElevation, row)
+def getRowElevation(row):
+    cleanedRow = map(getPointElevation, row)
     return cleanedRow
 
-def cleanGrid(grid):
-    eGrid = map(cleanRow, grid)
-    return eGrid
+def getGridElevation(grid):
+    elevationGrid = map(getRowElevation, grid)
+    return elevationGrid
 
 def rezGrid(grid):
     rGrid = map(rezRow, grid)
@@ -291,8 +277,15 @@ def rezRow(row):
     rezRow = map(getRez, row)
     return rezRow
 
-def checkRow(row):
+def rowIncomplete(row):
     #TODO: could potentially leave a half finished row
     return row[-1] == junkDatum
 
+def loadGridFromFile(filename):
+        if os.path.isfile(filename + '.csv'):
+            print('loading data from ' + filename + '.csv')
+            grid = loadCsv(filename)
+            grid = gridToFloats(grid)
+            return grid
+        return []
 

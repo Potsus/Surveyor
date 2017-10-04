@@ -179,6 +179,13 @@ def yn():
         return True
     return False
 
+def presentYN(choiceText):
+    ans = raw_input(choiceText + " y/n? ")
+    if ans.lower() == 'y':
+        return True
+    return False
+
+
 def writeCsv(data, filename):
     import csv
     with open(filename + ".csv", "wb") as f:
