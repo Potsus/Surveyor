@@ -104,10 +104,10 @@ class surveyor:
     ######## DATA RETRIEVAL #########
 
     def sampleRows(self, rows):
-        if presentYN('Sample %s rows at %s samples per row'):
+        if presentYN('Sample %s rows at %s samples per row' % (len(rows), self.xResolution)):
             for i, index in enumerate(rows):
                 print('sampling row %s of %s.' % (i, len(rows)))
-                row = self.sampleRow(lat)
+                row = self.sampleRow(index)
                 self.elevationGrid[index] = getRowElevation(row)
                 #self.rezGrid.append(rezRow(row))
             self.save()
