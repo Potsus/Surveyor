@@ -7,3 +7,5 @@ Locations
 test
 preview.*
 quicklook.*
+venv
+keys.py

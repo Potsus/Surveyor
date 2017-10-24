@@ -14,12 +14,12 @@ filename = (path + "terrain")
 
 #SETUP HEIGHTMAP
 mapper = surveyor(location['name'], location['bounds']['north'], location['bounds']['south'], location['bounds']['east'], location['bounds']['west'])
-mapper.setQuality(8)
+mapper.setQuality(16)
 mapper.scan()
 
 #SETUP EDGER
 edger = edgeFinder(mapper.getNpGrid())
-edger.markEdges(5.8)
+edger.markEdges(1)
 edges = edger.edges
 
 #SETUP PDF CANVAS
@@ -39,8 +39,8 @@ shapey = Shaper(edges)
 #shapey.createShapes()
 #shapey.sortShapes()
 #canvas.drawPixels(edger.edgePoints())
-#lines = shapey.getConnections()
-#canvas.drawLines(lines)
+lines = shapey.getConnections()
+canvas.drawLines(lines)
 
 #canvas.drawShapes(shapey.shapes)
 #canvas.drawPoints(shapey.getCenters())
