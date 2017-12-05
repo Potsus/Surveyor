@@ -10,7 +10,7 @@ run that through gdal_contour to extract contours. this generates several shapef
 add these contours to the postgis database?
 read them directly and create the vector files from there?
 i probably want to add them to the database as it'll make reprojecting easier
-add them to the db using 
+add them to the db using `shp2pgsql`
 
 
 

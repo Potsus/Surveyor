@@ -93,10 +93,21 @@ class Illustrator:
         for line in lines:
             self.drawLine(line)
 
-    def drawLine(self, line):
+    def drawLineRed(self, line):
         self.cr.set_source_rgb(1,0,0)
         self.cr.set_line_width(0.2)
+        self.cr.set_line_join(cairo.LINE_JOIN_ROUND)
         self.cr.set_line_cap(cairo.LINE_CAP_ROUND)
+        start = line.pop(0) #move to the first point and make sure not to repeat it
+        self.cr.move_to(start[1], start[0]) #remember that the axes are reversed
+
+        for point in line:
+            self.cr.line_to(point[1], point[0])
+
+        self.cr.stroke()
+
+    def drawLine(self, line):
+        self.setupLine()
         start = line.pop(0) #move to the first point and make sure not to repeat it
         self.cr.move_to(start[1], start[0]) #remember that the axes are reversed
 
