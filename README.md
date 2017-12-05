@@ -29,3 +29,8 @@ brew install gnu-sed
 install the java development kit, or jdk
 then
     java -jar heightmap2stl.jar <path to image> <height of model> <height of base>
+
+
+
+## Google maps apis
+Put your google maps api keys in a file called keys.py in an array called `gmapsApiKeys`
