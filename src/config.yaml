@@ -1,0 +1,45 @@
+---
+keys:
+  - 'AIzaSyCQMtoOPkxOmiIhzanjOfSj8Aco6uXHd9w'
+  - 'AIzaSyDrOhGpXNwe5n4-xeTrcWsEYrDA5xE0JH0'
+  - 'AIzaSyCYh06Uv-hHWBAB2rbWSdFmfyzY7SDLT4U'
+  - 'AIzaSyA_8uNN5X5OAFIfJ_Pov_Qerv1-gwTMEDk' 
+
+urls:
+  staticMap: 'https://maps.googleapis.com/maps/api/staticmap'
+  elevation: 'https://maps.googleapis.com/maps/api/elevation/json'
+
+errorImage: 'maperror.png'
+#errorHash: '9bbe3528194a37629b9b8836c6b9a441'
+errorHash: '7366665282730855494'
+
+filetree:
+  config: 'config'
+  elevpreview: 'quicklook'
+  rezpreview: 'resolution'
+  rawdir: 'raw'
+  maptilesdir: 'maptiles'
+  slicedir: 'slices'
+  vectordir: 'vectors'
+  rezdir: 'resoltions'
+
+mapOptions:
+  zoom: 12
+  mapType: roadmap
+  scale: 1
+  size: 640
+
+mapTypes:
+  - roadmap
+  - terrain
+  - satellite
+  - hybrid
+
+max_samples_per_request: 512
+max_requests_per_day: 25000
+
+useCache: True
+debug: True
+
+
+...

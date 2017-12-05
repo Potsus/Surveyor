@@ -1,0 +1,15 @@
+version: "2" 
+services:
+    geoslicedb:
+        image: mdillon/postgis
+        
+        environment:
+          - POSTGRESS_USER=postgress
+          - POSTGRESS_PASSWORD=postgress
+          - PGDATA=/var/lib/postgresql/data/pgdata
+
+        volumes:
+          - ./data:/var/lib/postgresql/data/pgdata
+          - ./src:/application
+
+        working_dir: /application

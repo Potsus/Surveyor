@@ -1,0 +1,98 @@
+Amsterdam:
+  bounds:
+    east: 5.068372600000001
+    north: 52.4309497
+    south: 52.3182742
+    west: 4.7288558
+  name: Amsterdam
+Australia:
+  bounds:
+    east: 156.405367
+    north: -10.545047
+    south: -44.39902
+    west: 111.53682
+  name: Australia
+Grand Canyon:
+  bounds:
+    east: -111.8002234
+    north: 36.51027029999999
+    south: 35.6745486
+    west: -113.8860446
+  name: Grand Canyon National Park
+Japan:
+  bounds:
+    east: 154.0031455
+    north: 45.6412626
+    south: 20.3585295
+    west: 122.8554688
+  name: Japan
+New Zeland:
+  bounds:
+    east: 179.0296048
+    north: -34.1296177
+    south: -52.6195826
+    west: 165.8700053
+  name: New Zealand
+North Australia:
+  bounds:
+    east: 166.7429167
+    north: -0.6911343999999999
+    south: -51.66332320000001
+    west: 100.0911072
+  name: North Australia
+The United Kingdom:
+  bounds:
+    east: 1.762995
+    north: 60.85484959999999
+    south: 49.8823322
+    west: -8.6494473
+  name: United Kingdom
+iceland:
+  bounds:
+    east: -12.2388001
+    north: 67.2466
+    south: 62.4819
+    west: -26.2572999
+  name: Iceland
+madagascar:
+  bounds:
+    east: 50.9985001
+    north: -11.4369999
+    south: -26.2146
+    west: 42.7368
+  name: Madagascar
+mosquito island:
+  bounds:
+    east: -64.3896745
+    north: 18.5153781
+    south: 18.5069182
+    west: -64.40033199999999
+  name: Mosquito Island
+phil:
+  bounds:
+    east: -74.925779
+    north: 40.138658
+    south: 39.841952
+    west: -75.304807
+  name: Philadelphia
+switzerland:
+  bounds:
+    east: 10.4923401
+    north: 47.8084546
+    south: 45.81792
+    west: 5.95608
+  name: Switzerland
+ti:
+  bounds:
+    east: -75.740578
+    north: 44.485782
+    south: 44.183296
+    west: -76.204782
+  name: The Thousand Islands
+vi:
+  bounds:
+    east: -64.316278
+    north: 18.538608
+    south: 18.289912
+    west: -65.107491
+  name: The Virgin Islands
