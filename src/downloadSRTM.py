@@ -7,22 +7,25 @@ class SRTM:
 
     def __init__(self, selector):
         self.selector = selector
-        self.location = self.locations['selector']
+        self.location = self.locations[selector]
         self.north = self.location['bounds']['north']
         self.south = self.location['bounds']['south']
         self.east  = self.location['bounds']['east']
         self.west  = self.location['bounds']['west']
 
         self.root = 'SRTM'
-        self.tiff = '%s/%s.tiff' % (self.root, self.name)
-        self.contours = '%s/contours' % root 
+        self.tiff = '%s/%s.tiff' % (self.root, selector)
+        self.contours = '%s/contours' % self.root 
 
     def getArea(self):
 
         #The --bounds option accepts latitude and longitude coordinates (more precisely in geodetic coordinates in the WGS84 refernce system EPSG:4326 for those who care) given as left bottom right top similarly to the rio command form rasterio.
         #NAME, LEFT, BOTTOM, RIGHT, TOP
+        #set the version to download with --product SRTM1 | SRTM3
         command = [
             'eio', #the elevation prog
+            '--product',
+            'SRTM3',
             'clip', #clip operation
             '-o', #output flag
             self.tiff, #output filename
@@ -35,8 +38,10 @@ class SRTM:
 
         call(command)
 
+    #this will generate a contour at height intervals so you don't have to run it a bunch of times
+    #there is a -3d flag you can set to get the height for each point in the contour that i probably want
     def generateContours(self, height):
-        call(['gdal_contour', '-i', str(height), '-a', 'height', self.tiff, self.contours])
+        call(['gdal_contour', '-i', str(height), '-3d', '-a', 'height', self.tiff, self.contours])
 
 
     def importContours(self):
@@ -55,6 +60,6 @@ class SRTM:
 
 loc = SRTM('vi')
 
-#loc.getArea()
-#loc.generateContours()
+loc.getArea()
+loc.generateContours(10)
 #loc.importContours()

@@ -13,7 +13,7 @@ south = loc['bounds']['south']
 east  = loc['bounds']['east']
 west  = loc['bounds']['west']
 
-root = 'SRTM/vi10'
+root = 'SRTM/contours'
 file = '%s/contour.shp' % root
 out  = '%s/preview' % root
 
@@ -49,7 +49,7 @@ def printShape(shape):
     for point in shape.points:
         points.append(convPoint(point))
 
-    #print('drawing shape')
+    print('drawing shape')
     canvas.drawShape(points)
 
 def printLine(line):
@@ -57,16 +57,17 @@ def printLine(line):
     for point in line.points:
         points.append(convPoint(point))
 
-    #print('drawing shape')
+    print('drawing line')
     canvas.drawLineRed(points)
 
 
 print('drawing shapes')
 for shape in shapes:
-    if shape.shapeType == 5:
+    print('shape type: %s' % shape.shapeType)
+    if shape.shapeType == 5 or shape.shapeType == 15:
         #print('found a ploygon')
         printShape(shape)
-    if shape.shapeType == 3:
+    if shape.shapeType == 3 or shape.shapeType == 13:
         #print('found a line')
         #if shape.bbox
         printLine(shape)
