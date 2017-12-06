@@ -1,3 +1,5 @@
+#convert old file structure to new surveyor class file structure
+
 import googlemaps
 from io import BytesIO
 import os.path
