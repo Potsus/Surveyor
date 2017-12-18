@@ -8,6 +8,7 @@ import PIL.ImageOps
 import ujson
 import hashlib
 import operator
+import shutil
 
 def superJsonImport(filename):
     with open( (filename + '.json') ) as json_data:
@@ -121,6 +122,11 @@ def empty_dir(directory):
     files = filter( lambda f: not f.startswith('.'), os.listdir(directory))
     for f in files:
         os.remove(directory + '/' + f)
+
+def remove_dir(directory):
+    if os.path.isdir(directory):
+        shutil.rmtree(directory)
+
 
 def getVisibleFiles(path):
     return filter( lambda f: not f.startswith('.'), os.listdir(path))

@@ -1,26 +1,31 @@
 
-from database import *
+#from database import *
 
 #MY STUFF
 from helpers import *
 
 import googlemaps
-config = importYaml('config')
+config = importYaml('configs/config')
 gmaps = googlemaps.Client(key=config['keys'][0])
 
+import os
 
-class Location(Base):
 
-    #SETUP TABLE COLUMNS
-    __tablename__ = 'location'
-    id    = Column(types.Integer, primary_key=True)
-    name  = Column(types.String(256))
-    north = Column(types.Float(precision=32))
-    south = Column(types.Float(precision=32))
-    east  = Column(types.Float(precision=32))
-    west  = Column(types.Float(precision=32))
+#class Location(Base): as a db class
+class Location:
+
+    #SETUP TABLE COLUMNS 
+    #SQLALCHEMY
+    #__tablename__ = 'location'
+    #id    = Column(types.Integer, primary_key=True)
+    #name  = Column(types.String(256))
+    #north = Column(types.Float(precision=32))
+    #south = Column(types.Float(precision=32))
+    #east  = Column(types.Float(precision=32))
+    #west  = Column(types.Float(precision=32))
     #grids = relationship("Grid")
     #END TABLE SETUP
+
 
     #define a location
     def __init__(self, name, north, south, east, west):
@@ -30,6 +35,8 @@ class Location(Base):
         self.east  = east
         self.west  = west
 
+        self.setup()
+
     def __repr__(self):
         #return self.serialize()
         return '%s: n: %s, s: %s, e: %s, w: %s' % (self.name, self.north, self.south, self.east, self.west)
@@ -38,9 +45,31 @@ class Location(Base):
     def __str__(self):
         return '%s: n: %s, s: %s, e: %s, w: %s' % (self.name, self.north, self.south, self.east, self.west)
 
+    def setup(self):
+        self.root = 'Locations/%s/' % self.name
+        #self.root = self.root.replace(' ', '\\ ')
+        self.configFile = self.root + 'config'
+        self.rawdir      = self.root + 'raw/'
+        self.maptilesdir = self.root + 'maptiles/'
+        self.slicesdir   = self.root + 'slices/'
+        self.vectorsdir  = self.root + 'vectors/'
+        self.heightsdir  = self.root + 'heightmaps/'
+        self.rezdir      = self.root + 'resolutions/'
+        self.tiff        = 'SRTM.tiff'
+        self.contours    = 'contours'
+        self.tiffFile    = self.root + self.tiff
+        self.contoursdir = self.root + self.contours + '/'
+
+        ensure_dir(self.root)
+        self.save()
+
+
+
+
     def save(self):
-        db.add(self)
-        db.commit()
+        #db.add(self)
+        #db.commit()
+        self.toYaml(self.configFile)
 
     def serialize(self):
         obj = {}
@@ -60,13 +89,6 @@ class Location(Base):
         obj['bounds']['west']  = self.west
         return obj
 
-    def deserialize(self, location):
-        self.name  = location['name']
-        self.north = location['bounds']['north']
-        self.south = location['bounds']['south']
-        self.east  = location['bounds']['east']
-        self.west  = location['bounds']['west']
-
     #deprecated
     def toYamlDb(self):
         toYaml('locations')
@@ -77,8 +99,12 @@ class Location(Base):
         saveYaml(self.serialize(), filename)
 
 
-#geolocate a place and return it as a location
+#return a location from a name
 def locationFromName(locChoice):
+    #check if the choice is already a location
+    if checkExistingLocations(locChoice):
+        return locationFromYaml(importYaml('Locations/%s/config' % locChoice))
+
     #geocode our choice
     geocode_result = gmaps.geocode(locChoice)
 
@@ -93,3 +119,18 @@ def locationFromName(locChoice):
     east  = geocode_result[0]['geometry']['viewport']['northeast']['lng']
     west  = geocode_result[0]['geometry']['viewport']['southwest']['lng']
     return Location(name, north, south, east, west)
+
+def checkExistingLocations(name):
+    locations = os.listdir('Locations')
+    if name in locations:
+        return True
+    return False
+
+def locationFromYaml(YamlLocation):
+    name  = YamlLocation['name']
+    north = YamlLocation['north']
+    south = YamlLocation['south']
+    east  = YamlLocation['east']
+    west  = YamlLocation['west']
+    return Location(name, north, south, east, west)
+
