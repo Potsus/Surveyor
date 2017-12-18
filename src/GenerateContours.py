@@ -11,12 +11,14 @@ print('importing location')
 loc = locationFromName('The_Virgin_Islands')
 #loc = locationFromName('Amsterdam')
 
-#SRTMfetcher = SRTM(loc)
+contoursdir = loc.contoursdir
+#tiff = loc.root + loc.tiff
+tiff = loc.root + 'geo.tif'
+cutoff = 6
 
-#SRTMfetcher.getArea(version=3) #fetch the relevant areas and clip them to our bounds
+getSRTMArea(loc, version=3) #fetch the relevant areas and clip them to our bounds
 
-cutoff = 1
-#SRTMfetcher.generateContours(height=25, z=True) #use the tiff we generated to generate shp files
+generateContours(tiff, contoursdir ,height=25, z=True) #use the tiff we generated to generate shp files
 
 
 
