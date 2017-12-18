@@ -27,6 +27,8 @@ the contour file also contains some useful information including
 
 use `rasterio` to apply the high detail shorline data as a mask and delete everything not in the mask before doing contours
 
+convert my google maps data to a geo tiff with csvtotiff.py
+
 
 ## where i want to be
 Download data straight from NASA's SRTM project, or find a way to use the rasterized googlemaps data.

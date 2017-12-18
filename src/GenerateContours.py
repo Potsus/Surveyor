@@ -11,16 +11,17 @@ print('importing location')
 loc = locationFromName('The_Virgin_Islands')
 #loc = locationFromName('Amsterdam')
 
-SRTMfetcher = SRTM(loc)
+#SRTMfetcher = SRTM(loc)
 
-SRTMfetcher.getArea(version=3) #fetch the relevant areas and clip them to our bounds
+#SRTMfetcher.getArea(version=3) #fetch the relevant areas and clip them to our bounds
 
-cutoff = 0
-SRTMfetcher.generateContours(height=25, z=True) #use the tiff we generated to generate shp files
+cutoff = 1
+#SRTMfetcher.generateContours(height=25, z=True) #use the tiff we generated to generate shp files
 
 
 
-file = loc.contoursdir + 'contour.shp'
+#file = loc.contoursdir + 'contour.shp'
+file = loc.root + 'gmapscontours/' + 'contour.shp'
 out  = loc.root + 'contours' 
 
 #def contoursToShapes(folder)
