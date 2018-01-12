@@ -1,6 +1,6 @@
 import shapefile 
 from modules.illustrator import Illustrator
-from modules.SRTM import SRTM
+from modules.SRTM import getSRTMArea, generateContours
 from modules.location import locationFromName
 
 
@@ -11,14 +11,15 @@ print('importing location')
 loc = locationFromName('The_Virgin_Islands')
 #loc = locationFromName('Amsterdam')
 
+#contoursdir = loc.contoursdir
 contoursdir = loc.contoursdir
-#tiff = loc.root + loc.tiff
-tiff = loc.root + 'geo.tif'
-cutoff = 6
+tiff = loc.root + loc.tiff
+#tiff = loc.root + 'clipped.tiff'
+cutoff = 0
 
-getSRTMArea(loc, version=3) #fetch the relevant areas and clip them to our bounds
+#getSRTMArea(loc, version=1) #fetch the relevant areas and clip them to our bounds
 
-generateContours(tiff, contoursdir ,height=25, z=True) #use the tiff we generated to generate shp files
+#generateContours(tiff, contoursdir ,height=10, z=True) #use the tiff we generated to generate shp files
 
 
 
@@ -71,7 +72,7 @@ def printLine(line):
     for point in line.points:
         points.append(convPoint(point))
 
-    points = cleanupShape(points)
+    #points = cleanupShape(points)
     #print('drawing line')
     canvas.drawLine(points)
 
@@ -124,9 +125,9 @@ def smoothShape(shape, s=3.0, k=2, f=0.5):
         return shape   
 
 def cleanupShape(shape):
-    #shape = padEnds(shape)
-    #shape = smoothShape(shape)
-    #shape = clipEnds(shape)
+    shape = padEnds(shape)
+    shape = smoothShape(shape)
+    shape = clipEnds(shape)
     return shape
 
 
