@@ -78,7 +78,7 @@ subprocess32==3.2.7
 svgwrite==1.1.11
 traitlets==4.3.2
 tsp-solver2==0.2
-ujson==1.35
+ujson==5.2.0
 urllib3==1.21.1
 utm==0.4.2
 virtualenv==15.1.0
