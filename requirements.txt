@@ -40,7 +40,7 @@ Markdown==2.6.8
 MarkupSafe==1.0
 matplotlib==2.0.2
 MySQL-python==1.2.5
-numpy==1.13.1
+numpy==1.21.0
 olefile==0.44
 pandas==0.20.3
 pathlib2==2.3.0
